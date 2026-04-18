@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset='utf-8'></head><body>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script type="text/babel" src="tokens.jsx"></script>
+<script type="text/babel" src="frames/ios-frame.jsx"></script>
+<script type="text/babel" src="primitives.jsx"></script>
+<script type="text/babel" src="screen-home.jsx"></script>
+<script type="text/babel" src="screen-neglected.jsx"></script>
+<script type="text/babel" src="screen-list-leaderboard.jsx"></script>
+<script type="text/babel" src="screen-dashboard-other.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+<div id="r"></div>
+<script>
+window.addEventListener('error', e => {
+  document.getElementById('r').innerHTML += '<pre>' + (e.message || e.error) + ' @ ' + e.filename + ':' + e.lineno + '</pre>';
+});
+setTimeout(() => {
+  document.getElementById('r').innerHTML += '<pre>has App: ' + !!window.App + '</pre>';
+  document.getElementById('r').innerHTML += '<pre>has TASKS: ' + !!window.TASKS + '</pre>';
+  document.getElementById('r').innerHTML += '<pre>has Avatar: ' + !!window.Avatar + '</pre>';
+  document.getElementById('r').innerHTML += '<pre>has IOSDevice: ' + !!window.IOSDevice + '</pre>';
+  document.getElementById('r').innerHTML += '<pre>has HomeScreen: ' + !!window.HomeScreen + '</pre>';
+  document.getElementById('r').innerHTML += '<pre>has NeglectedScreen: ' + !!window.NeglectedScreen + '</pre>';
+  document.getElementById('r').innerHTML += '<pre>has TaskListScreen: ' + !!window.TaskListScreen + '</pre>';
+  document.getElementById('r').innerHTML += '<pre>has DashboardScreen: ' + !!window.DashboardScreen + '</pre>';
+  document.getElementById('r').innerHTML += '<pre>has Onboarding: ' + !!window.Onboarding + '</pre>';
+}, 3000);
+</script>
+</body></html>
