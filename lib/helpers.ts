@@ -1,0 +1,113 @@
+import type { ComputedTaskLog, Task } from './types'
+
+export function lastDoneByTask(logs: ComputedTaskLog[]): Record<string, ComputedTaskLog> {
+  const m: Record<string, ComputedTaskLog> = {}
+  logs.forEach((l) => {
+    if (!m[l.taskId] || l.ts > m[l.taskId].ts) m[l.taskId] = l
+  })
+  return m
+}
+
+export function taskStreak(logs: ComputedTaskLog[], taskId: string): { member: string | null; count: number } {
+  const filtered = logs.filter((l) => l.taskId === taskId).sort((a, b) => b.ts - a.ts)
+  if (filtered.length === 0) return { member: null, count: 0 }
+  const who = filtered[0].memberId
+  let c = 0
+  for (const l of filtered) {
+    if (l.memberId === who) c++
+    else break
+  }
+  return { member: who, count: c }
+}
+
+export function categoryStreak(
+  logs: ComputedTaskLog[],
+  cat: string
+): { member: string | null; count: number; coverage: number; days: number } {
+  const filtered = logs.filter((l) => l.cat === cat).sort((a, b) => b.ts - a.ts)
+  if (filtered.length === 0) return { member: null, count: 0, coverage: 0, days: 0 }
+  const who = filtered[0].memberId
+  let c = 0
+  for (const l of filtered) {
+    if (l.memberId === who) c++
+    else break
+  }
+  const monthAgo = Date.now() - 30 * 86400000
+  const thisMonth = filtered.filter((l) => l.ts >= monthAgo)
+  const byWho = thisMonth.filter((l) => l.memberId === who).length
+  const coverage = thisMonth.length > 0 ? byWho / thisMonth.length : 0
+  const streakLogs = filtered.slice(0, c)
+  const oldestStreak = streakLogs.length > 0 ? streakLogs[streakLogs.length - 1].ts : Date.now()
+  const days = Math.floor((Date.now() - oldestStreak) / 86400000)
+  return { member: who, count: c, coverage, days }
+}
+
+export function monthlyQuota(logs: ComputedTaskLog[], tasks: Task[]): { done: number; expected: number; pct: number } {
+  const expected = tasks.reduce((s, t) => s + t.time_minutes * (30 / t.cycle_days), 0)
+  const monthAgo = Date.now() - 30 * 86400000
+  const done = logs.filter((l) => l.ts >= monthAgo).reduce((s, l) => s + l.time, 0)
+  return { done, expected: Math.round(expected), pct: Math.min(1, done / expected) }
+}
+
+export function timeByMember(logs: ComputedTaskLog[], uid: string, since: number): number {
+  return logs.filter((l) => l.memberId === uid && l.ts >= since).reduce((s, l) => s + l.time, 0)
+}
+
+export function formatMinutes(min: number): string {
+  if (min < 60) return `${min}min`
+  const h = Math.floor(min / 60)
+  const m = min % 60
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}min`
+}
+
+export function timeAgo(ts: number): string {
+  const diff = Date.now() - ts
+  const days = Math.floor(diff / 86400000)
+  if (days === 0) return 'heute'
+  if (days === 1) return 'gestern'
+  if (days < 7) return `vor ${days} Tagen`
+  if (days < 14) return 'letzte Woche'
+  if (days < 60) return `vor ${Math.floor(days / 7)} Wochen`
+  return `vor ${Math.floor(days / 30)} Monaten`
+}
+
+export function freqLabel(cycle: number): string {
+  if (cycle <= 1) return 'täglich'
+  if (cycle <= 3) return 'alle paar Tage'
+  if (cycle <= 7) return 'wöchentlich'
+  if (cycle <= 14) return 'alle 2 Wochen'
+  if (cycle <= 31) return 'monatlich'
+  if (cycle <= 60) return 'alle 2 Monate'
+  return 'quartalsweise'
+}
+
+export function entlastungCandidates(
+  logs: ComputedTaskLog[],
+  tasks: Task[],
+  otherUserId: string
+): (Task & { streak: { member: string | null; count: number } })[] {
+  return tasks
+    .map((t) => {
+      const s = taskStreak(logs, t.id)
+      return { ...t, streak: s }
+    })
+    .filter((t) => t.streak.count >= 3 && t.streak.member !== otherUserId)
+    .sort((a, b) => b.streak.count - a.streak.count)
+}
+
+export function toComputedLog(
+  log: { id: string; task_id: string; profile_id: string; household_id: string; completed_at: string },
+  task: Task
+): ComputedTaskLog {
+  return {
+    id: log.id,
+    taskId: log.task_id,
+    taskName: task.name,
+    cat: task.category,
+    pts: task.pts,
+    time: task.time_minutes,
+    memberId: log.profile_id,
+    ts: new Date(log.completed_at).getTime(),
+  }
+}

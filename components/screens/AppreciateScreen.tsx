@@ -1,0 +1,144 @@
+'use client'
+import { Avatar } from '@/components/shared/Avatar'
+import { CategoryOrb } from '@/components/shared/CategoryOrb'
+import { TaskIconTile } from '@/components/shared/TaskIconTile'
+import { Heart } from '@/components/shared/Icons'
+import { getCatToken } from '@/lib/tokens'
+import { categoryStreak, taskStreak, timeAgo, formatMinutes } from '@/lib/helpers'
+import type { AppState, Task } from '@/lib/types'
+
+interface AppreciateScreenProps {
+  state: AppState
+  onKudos: (toMemberId: string, task: Task) => void
+}
+
+export function AppreciateScreen({ state, onKudos }: AppreciateScreenProps) {
+  const { logs, tasks, profiles, currentProfile, categories, dark } = state
+  const me = currentProfile
+  const other = profiles.find((p) => p.id !== me.id)
+
+  const weekAgo = Date.now() - 7 * 86400000
+
+  const catHighlights = categories
+    .map((c) => {
+      const cs = categoryStreak(logs, c.name)
+      return { cat: c.name, ...cs }
+    })
+    .filter((h) => h.coverage >= 0.6 && h.member)
+    .sort((a, b) => b.coverage - a.coverage)
+
+  const allStreaks = tasks
+    .map((t) => ({ task: t, streak: taskStreak(logs, t.id) }))
+    .filter((x) => x.streak.count >= 3)
+
+  const heroByMember: Record<string, typeof allStreaks[0]> = {}
+  allStreaks.forEach((x) => {
+    const uid = x.streak.member!
+    if (!heroByMember[uid] || x.streak.count > heroByMember[uid].streak.count) {
+      heroByMember[uid] = x
+    }
+  })
+
+  const hero = other ? heroByMember[other.id] : null
+  const recentByOther = other
+    ? logs.filter((l) => l.memberId === other.id && l.ts >= weekAgo).slice(0, 6)
+    : []
+
+  const txt = dark ? '#F2ECE4' : '#2A221E'
+  const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)'
+  const cardBg = dark ? 'rgba(50,40,44,0.75)' : 'rgba(255,255,255,0.75)'
+  const cardBorder = dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.04)'
+
+  return (
+    <div style={{ paddingBottom: 140 }}>
+      <div style={{ padding: '60px 24px 0' }}>
+        <div style={{ fontSize: 12, fontWeight: 500, color: muted, letterSpacing: 0.5, textTransform: 'uppercase' }}>diesen Monat</div>
+        <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 40, lineHeight: 1.05, letterSpacing: -0.5, color: txt, marginTop: 4 }}>
+          Wertschätzung
+        </div>
+      </div>
+
+      {/* Unsung hero card */}
+      {hero && other && (
+        <div style={{
+          margin: '22px 16px 0', padding: '22px 20px', borderRadius: 26,
+          background: `linear-gradient(140deg, ${other.bg_color} 0%, ${dark ? 'rgba(50,40,44,0.85)' : 'rgba(255,255,255,0.9)'} 75%)`,
+          border: cardBorder, position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', filter: 'blur(40px)', background: `${other.color.replace('rgb', 'rgba').replace(')', ', 0.22)')}`, pointerEvents: 'none' }}/>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Avatar member={other} size={54} ring ringColor={other.color}/>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: other.color, letterSpacing: 0.8, textTransform: 'uppercase' }}>Stille*r Held*in</div>
+              <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 28, color: txt, letterSpacing: -0.3, lineHeight: 1.1, marginTop: 2 }}>{other.display_name}</div>
+            </div>
+          </div>
+          <div style={{ marginTop: 16, fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 20, color: txt, lineHeight: 1.35, letterSpacing: -0.2 }}>
+            Hat <em>{hero.task.name}</em> die letzten <em>{hero.streak.count}×</em> erledigt.
+          </div>
+          <button onClick={() => onKudos(other.id, hero.task)} style={{ marginTop: 14, border: 'none', cursor: 'pointer', padding: '10px 18px', borderRadius: 999, background: txt, color: dark ? '#2A221E' : '#FDF8F1', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <Heart size={14} filled color={me.color}/>
+            Danke sagen
+          </button>
+        </div>
+      )}
+
+      {/* Category leaderboard */}
+      <div style={{ marginTop: 26 }}>
+        <div style={{ padding: '0 24px 10px', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, letterSpacing: -0.2 }}>
+          Wer rockt was
+        </div>
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {catHighlights.map((h) => {
+            const m = profiles.find((mm) => mm.id === h.member)
+            if (!m) return null
+            return (
+              <div key={h.cat} style={{ padding: '14px 16px', borderRadius: 18, background: cardBg, border: cardBorder, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <CategoryOrb cat={h.cat} size={36} categories={categories}/>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: txt, letterSpacing: -0.1 }}>{h.cat}</div>
+                  <div style={{ marginTop: 3, fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 16, color: muted, letterSpacing: -0.1, lineHeight: 1.2 }}>
+                    <em>{m.display_name}</em> hat <em>{Math.round(h.coverage * 100)}%</em> gemacht
+                  </div>
+                </div>
+                <Avatar member={m} size={32}/>
+              </div>
+            )
+          })}
+          {catHighlights.length === 0 && (
+            <div style={{ padding: 20, textAlign: 'center', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18, color: muted, fontStyle: 'italic' }}>
+              alles schön geteilt diesen Monat.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Kudos feed */}
+      {recentByOther.length > 0 && other && (
+        <div style={{ marginTop: 26 }}>
+          <div style={{ padding: '0 24px 10px', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, letterSpacing: -0.2 }}>
+            Diese Woche
+          </div>
+          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {recentByOther.map((l, i) => {
+              const task = tasks.find((t) => t.id === l.taskId)
+              if (!task) return null
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 16, background: cardBg, border: cardBorder }}>
+                  <TaskIconTile task={task} size={36} categories={categories}/>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{l.taskName}</div>
+                    <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{other.display_name} · {timeAgo(l.ts)} · {formatMinutes(l.time)}</div>
+                  </div>
+                  <button onClick={() => onKudos(other.id, task)} style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Heart size={16} color={me.color}/>
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

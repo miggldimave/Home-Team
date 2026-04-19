@@ -1,0 +1,2114 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Home-Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:'Geist',system-ui,sans-serif}
+body{background:#f2eade}
+button{font-family:'Geist',system-ui,sans-serif}
+em{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400}
+::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body><div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+
+// ===== frames/ios-frame.jsx =====
+
+// iOS.jsx — Simplified iOS 26 (Liquid Glass) device frame
+// Based on the iOS 26 UI Kit + Figma status bar spec. No assets, no deps.
+// Exports: IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard
+
+// ─────────────────────────────────────────────────────────────
+// Status bar
+// ─────────────────────────────────────────────────────────────
+function IOSStatusBar({ dark = false, time = '9:41' }) {
+  const c = dark ? '#fff' : '#000';
+  return (
+    <div style={{
+      display: 'flex', gap: 154, alignItems: 'center', justifyContent: 'center',
+      padding: '21px 24px 19px', boxSizing: 'border-box',
+      position: 'relative', zIndex: 20, width: '100%',
+    }}>
+      <div style={{ flex: 1, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 1.5 }}>
+        <span style={{
+          fontFamily: '-apple-system, "SF Pro", system-ui', fontWeight: 590,
+          fontSize: 17, lineHeight: '22px', color: c,
+        }}>{time}</span>
+      </div>
+      <div style={{ flex: 1, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, paddingTop: 1, paddingRight: 1 }}>
+        <svg width="19" height="12" viewBox="0 0 19 12">
+          <rect x="0" y="7.5" width="3.2" height="4.5" rx="0.7" fill={c}/>
+          <rect x="4.8" y="5" width="3.2" height="7" rx="0.7" fill={c}/>
+          <rect x="9.6" y="2.5" width="3.2" height="9.5" rx="0.7" fill={c}/>
+          <rect x="14.4" y="0" width="3.2" height="12" rx="0.7" fill={c}/>
+        </svg>
+        <svg width="17" height="12" viewBox="0 0 17 12">
+          <path d="M8.5 3.2C10.8 3.2 12.9 4.1 14.4 5.6L15.5 4.5C13.7 2.7 11.2 1.5 8.5 1.5C5.8 1.5 3.3 2.7 1.5 4.5L2.6 5.6C4.1 4.1 6.2 3.2 8.5 3.2Z" fill={c}/>
+          <path d="M8.5 6.8C9.9 6.8 11.1 7.3 12 8.2L13.1 7.1C11.8 5.9 10.2 5.1 8.5 5.1C6.8 5.1 5.2 5.9 3.9 7.1L5 8.2C5.9 7.3 7.1 6.8 8.5 6.8Z" fill={c}/>
+          <circle cx="8.5" cy="10.5" r="1.5" fill={c}/>
+        </svg>
+        <svg width="27" height="13" viewBox="0 0 27 13">
+          <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke={c} strokeOpacity="0.35" fill="none"/>
+          <rect x="2" y="2" width="20" height="9" rx="2" fill={c}/>
+          <path d="M25 4.5V8.5C25.8 8.2 26.5 7.2 26.5 6.5C26.5 5.8 25.8 4.8 25 4.5Z" fill={c} fillOpacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Liquid glass pill — blur + tint + shine
+// ─────────────────────────────────────────────────────────────
+function IOSGlassPill({ children, dark = false, style = {} }) {
+  return (
+    <div style={{
+      height: 44, minWidth: 44, borderRadius: 9999,
+      position: 'relative', overflow: 'hidden',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: dark
+        ? '0 2px 6px rgba(0,0,0,0.35), 0 6px 16px rgba(0,0,0,0.2)'
+        : '0 1px 3px rgba(0,0,0,0.07), 0 3px 10px rgba(0,0,0,0.06)',
+      ...style,
+    }}>
+      {/* blur + tint */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 9999,
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        background: dark ? 'rgba(120,120,128,0.28)' : 'rgba(255,255,255,0.5)',
+      }} />
+      {/* shine */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 9999,
+        boxShadow: dark
+          ? 'inset 1.5px 1.5px 1px rgba(255,255,255,0.15), inset -1px -1px 1px rgba(255,255,255,0.08)'
+          : 'inset 1.5px 1.5px 1px rgba(255,255,255,0.7), inset -1px -1px 1px rgba(255,255,255,0.4)',
+        border: dark ? '0.5px solid rgba(255,255,255,0.15)' : '0.5px solid rgba(0,0,0,0.06)',
+      }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Navigation bar — glass pills + large title
+// ─────────────────────────────────────────────────────────────
+function IOSNavBar({ title = 'Title', dark = false, trailingIcon = true }) {
+  const muted = dark ? 'rgba(255,255,255,0.6)' : '#404040';
+  const text = dark ? '#fff' : '#000';
+  const pillIcon = (content) => (
+    <IOSGlassPill dark={dark}>
+      <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {content}
+      </div>
+    </IOSGlassPill>
+  );
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 10,
+      paddingTop: 62, paddingBottom: 10, position: 'relative', zIndex: 5,
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 16px',
+      }}>
+        {/* back chevron */}
+        {pillIcon(
+          <svg width="12" height="20" viewBox="0 0 12 20" fill="none" style={{ marginLeft: -1 }}>
+            <path d="M10 2L2 10l8 8" stroke={muted} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+        {/* trailing ellipsis */}
+        {trailingIcon && pillIcon(
+          <svg width="22" height="6" viewBox="0 0 22 6">
+            <circle cx="3" cy="3" r="2.5" fill={muted}/>
+            <circle cx="11" cy="3" r="2.5" fill={muted}/>
+            <circle cx="19" cy="3" r="2.5" fill={muted}/>
+          </svg>
+        )}
+      </div>
+      {/* large title */}
+      <div style={{
+        padding: '0 16px',
+        fontFamily: '-apple-system, system-ui',
+        fontSize: 34, fontWeight: 700, lineHeight: '41px',
+        color: text, letterSpacing: 0.4,
+      }}>{title}</div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Grouped list (inset card, r:26) + row (52px)
+// ─────────────────────────────────────────────────────────────
+function IOSListRow({ title, detail, icon, chevron = true, isLast = false, dark = false }) {
+  const text = dark ? '#fff' : '#000';
+  const sec = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+  const ter = dark ? 'rgba(235,235,245,0.3)' : 'rgba(60,60,67,0.3)';
+  const sep = dark ? 'rgba(84,84,88,0.65)' : 'rgba(60,60,67,0.12)';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', minHeight: 52,
+      padding: '0 16px', position: 'relative',
+      fontFamily: '-apple-system, system-ui', fontSize: 17,
+      letterSpacing: -0.43,
+    }}>
+      {icon && (
+        <div style={{
+          width: 30, height: 30, borderRadius: 7, background: icon,
+          marginRight: 12, flexShrink: 0,
+        }} />
+      )}
+      <div style={{ flex: 1, color: text }}>{title}</div>
+      {detail && <span style={{ color: sec, marginRight: 6 }}>{detail}</span>}
+      {chevron && (
+        <svg width="8" height="14" viewBox="0 0 8 14" style={{ flexShrink: 0 }}>
+          <path d="M1 1l6 6-6 6" stroke={ter} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
+      {!isLast && (
+        <div style={{
+          position: 'absolute', bottom: 0, right: 0,
+          left: icon ? 58 : 16, height: 0.5, background: sep,
+        }} />
+      )}
+    </div>
+  );
+}
+
+function IOSList({ header, children, dark = false }) {
+  const hc = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+  const bg = dark ? '#1C1C1E' : '#fff';
+  return (
+    <div>
+      {header && (
+        <div style={{
+          fontFamily: '-apple-system, system-ui', fontSize: 13,
+          color: hc, textTransform: 'uppercase',
+          padding: '8px 36px 6px', letterSpacing: -0.08,
+        }}>{header}</div>
+      )}
+      <div style={{
+        background: bg, borderRadius: 26,
+        margin: '0 16px', overflow: 'hidden',
+      }}>{children}</div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Device frame
+// ─────────────────────────────────────────────────────────────
+function IOSDevice({
+  children, width = 402, height = 874, dark = false,
+  title, keyboard = false,
+}) {
+  return (
+    <div style={{
+      width, height, borderRadius: 48, overflow: 'hidden',
+      position: 'relative', background: dark ? '#000' : '#F2F2F7',
+      boxShadow: '0 40px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.12)',
+      fontFamily: '-apple-system, system-ui, sans-serif',
+      WebkitFontSmoothing: 'antialiased',
+    }}>
+      {/* dynamic island */}
+      <div style={{
+        position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
+        width: 126, height: 37, borderRadius: 24, background: '#000', zIndex: 50,
+      }} />
+      {/* status bar (absolute) */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+        <IOSStatusBar dark={dark} />
+      </div>
+      {/* nav + content */}
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {title !== undefined && <IOSNavBar title={title} dark={dark} />}
+        <div style={{ flex: 1, overflow: 'auto' }}>{children}</div>
+        {keyboard && <IOSKeyboard dark={dark} />}
+      </div>
+      {/* home indicator — always on top */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 60,
+        height: 34, display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
+        paddingBottom: 8, pointerEvents: 'none',
+      }}>
+        <div style={{
+          width: 139, height: 5, borderRadius: 100,
+          background: dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.25)',
+        }} />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Keyboard — iOS 26 liquid glass
+// ─────────────────────────────────────────────────────────────
+function IOSKeyboard({ dark = false }) {
+  const glyph = dark ? 'rgba(255,255,255,0.7)' : '#595959';
+  const sugg = dark ? 'rgba(255,255,255,0.6)' : '#333';
+  const keyBg = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.85)';
+
+  // special-key icons
+  const icons = {
+    shift: <svg width="19" height="17" viewBox="0 0 19 17"><path d="M9.5 1L1 9.5h4.5V16h8V9.5H18L9.5 1z" fill={glyph}/></svg>,
+    del: <svg width="23" height="17" viewBox="0 0 23 17"><path d="M7 1h13a2 2 0 012 2v11a2 2 0 01-2 2H7l-6-7.5L7 1z" fill="none" stroke={glyph} strokeWidth="1.6" strokeLinejoin="round"/><path d="M10 5l7 7M17 5l-7 7" stroke={glyph} strokeWidth="1.6" strokeLinecap="round"/></svg>,
+    ret: <svg width="20" height="14" viewBox="0 0 20 14"><path d="M18 1v6H4m0 0l4-4M4 7l4 4" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  };
+
+  const key = (content, { w, flex, ret, fs = 25, k } = {}) => (
+    <div key={k} style={{
+      height: 42, borderRadius: 8.5,
+      flex: flex ? 1 : undefined, width: w, minWidth: 0,
+      background: ret ? '#08f' : keyBg,
+      boxShadow: '0 1px 0 rgba(0,0,0,0.075)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: '-apple-system, "SF Compact", system-ui',
+      fontSize: fs, fontWeight: 458, color: ret ? '#fff' : glyph,
+    }}>{content}</div>
+  );
+
+  const row = (keys, pad = 0) => (
+    <div style={{ display: 'flex', gap: 6.5, justifyContent: 'center', padding: `0 ${pad}px` }}>
+      {keys.map(l => key(l, { flex: true, k: l }))}
+    </div>
+  );
+
+  return (
+    <div style={{
+      position: 'relative', zIndex: 15, borderRadius: 27, overflow: 'hidden',
+      padding: '11px 0 2px',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      boxShadow: dark
+        ? '0 -2px 20px rgba(0,0,0,0.09)'
+        : '0 -1px 6px rgba(0,0,0,0.018), 0 -3px 20px rgba(0,0,0,0.012)',
+    }}>
+      {/* liquid glass bg — same recipe as nav pills */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 27,
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        background: dark ? 'rgba(120,120,128,0.14)' : 'rgba(255,255,255,0.25)',
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 27,
+        boxShadow: dark
+          ? 'inset 1.5px 1.5px 1px rgba(255,255,255,0.15)'
+          : 'inset 1.5px 1.5px 1px rgba(255,255,255,0.7), inset -1px -1px 1px rgba(255,255,255,0.4)',
+        border: dark ? '0.5px solid rgba(255,255,255,0.15)' : '0.5px solid rgba(0,0,0,0.06)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* autocorrect bar */}
+      <div style={{
+        display: 'flex', gap: 20, alignItems: 'center',
+        padding: '8px 22px 13px', width: '100%', boxSizing: 'border-box',
+        position: 'relative',
+      }}>
+        {['"The"', 'the', 'to'].map((w, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <div style={{ width: 1, height: 25, background: '#ccc', opacity: 0.3 }} />}
+            <div style={{
+              flex: 1, textAlign: 'center',
+              fontFamily: '-apple-system, system-ui', fontSize: 17,
+              color: sugg, letterSpacing: -0.43, lineHeight: '22px',
+            }}>{w}</div>
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* key layout */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 13,
+        padding: '0 6.5px', width: '100%', boxSizing: 'border-box',
+        position: 'relative',
+      }}>
+        {row(['q','w','e','r','t','y','u','i','o','p'])}
+        {row(['a','s','d','f','g','h','j','k','l'], 20)}
+        <div style={{ display: 'flex', gap: 14.25, alignItems: 'center' }}>
+          {key(icons.shift, { w: 45, k: 'shift' })}
+          <div style={{ display: 'flex', gap: 6.5, flex: 1 }}>
+            {['z','x','c','v','b','n','m'].map(l => key(l, { flex: true, k: l }))}
+          </div>
+          {key(icons.del, { w: 45, k: 'del' })}
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {key('ABC', { w: 92.25, fs: 18, k: 'abc' })}
+          {key('', { flex: true, k: 'space' })}
+          {key(icons.ret, { w: 92.25, ret: true, k: 'ret' })}
+        </div>
+      </div>
+
+      {/* bottom spacer (emoji+mic area, icons omitted) */}
+      <div style={{ height: 56, width: '100%', position: 'relative' }} />
+    </div>
+  );
+}
+
+Object.assign(window, {
+  IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard,
+});
+
+
+// ===== tokens.jsx =====
+// Home-Team tokens — warm, soft, cooperative
+
+// Soft, muted category palette (OKLCH-harmonized)
+const CATEGORIES = {
+  Allgemein:    { hue: 'rgb(168, 146, 196)', soft: 'rgb(238, 230, 246)', deep: 'rgb(78, 58, 106)', label: 'Allgemein' },
+  Bad:          { hue: 'rgb(122, 168, 170)', soft: 'rgb(218, 236, 237)', deep: 'rgb(42, 80, 82)',  label: 'Bad' },
+  Küche:        { hue: 'rgb(215, 128, 96)',  soft: 'rgb(249, 223, 210)', deep: 'rgb(118, 55, 30)', label: 'Küche' },
+  Schlafzimmer: { hue: 'rgb(138, 152, 190)', soft: 'rgb(224, 230, 244)', deep: 'rgb(50, 66, 104)', label: 'Schlafzimmer' },
+  Wohnzimmer:   { hue: 'rgb(212, 164, 104)', soft: 'rgb(248, 232, 210)', deep: 'rgb(108, 74, 30)', label: 'Wohnzimmer' },
+  Wäsche:       { hue: 'rgb(196, 140, 170)', soft: 'rgb(247, 226, 236)', deep: 'rgb(106, 48, 78)', label: 'Wäsche' },
+};
+
+// Task master list with icon glyph, time (minutes), pts, cycle days
+// Icons are simple unicode glyphs that render consistently across platforms
+const TASK_ICONS = {
+  't1': '♻', 't2': '❀', 't3': '✿', 't4': '◈', 't5': '✦',
+  't6': '⦿', 't7': '≈', 't8': '✧', 't9': '◉', 't10': '◎',
+  't11': '⌀', 't12': '◐',
+  't13': '◇', 't14': '◆', 't15': '✿', 't16': '◉', 't17': '⌬', 't18': '≋', 't19': '◉', 't20': '◇',
+  't21': '☾', 't22': '◈',
+  't23': '◍',
+  't24': '≈', 't25': '∥', 't26': '◊',
+};
+
+const TASKS = [
+  { id: 't1',  name: 'Altglas wegbringen',   cat: 'Allgemein', pts: 8,  time: 12, cycle: 14 },
+  { id: 't2',  name: 'Blumen gießen',        cat: 'Allgemein', pts: 3,  time: 5,  cycle: 4 },
+  { id: 't3',  name: 'Blumen umtopfen',      cat: 'Allgemein', pts: 12, time: 30, cycle: 90 },
+  { id: 't4',  name: 'Feudeln',              cat: 'Allgemein', pts: 10, time: 25, cycle: 14 },
+  { id: 't5',  name: 'Oberflächen abstauben',cat: 'Allgemein', pts: 6,  time: 15, cycle: 14 },
+  { id: 't6',  name: 'Pfand wegbringen',     cat: 'Allgemein', pts: 5,  time: 15, cycle: 10 },
+  { id: 't7',  name: 'Staubsaugen',          cat: 'Allgemein', pts: 8,  time: 20, cycle: 7 },
+  { id: 't8',  name: 'Timi reinigen',        cat: 'Allgemein', pts: 6,  time: 10, cycle: 7 },
+  { id: 't9',  name: 'Wocheneinkauf',        cat: 'Allgemein', pts: 12, time: 60, cycle: 7 },
+  { id: 't10', name: 'Zwischendurcheinkauf', cat: 'Allgemein', pts: 4,  time: 20, cycle: 3 },
+  { id: 't11', name: 'Mülleimer leeren',     cat: 'Bad',       pts: 3,  time: 5,  cycle: 7 },
+  { id: 't12', name: 'Bad putzen',           cat: 'Bad',       pts: 14, time: 35, cycle: 10 },
+  { id: 't13', name: 'Abwaschen',            cat: 'Küche',     pts: 5,  time: 15, cycle: 1 },
+  { id: 't14', name: 'Spüler ausräumen',     cat: 'Küche',     pts: 3,  time: 5,  cycle: 2 },
+  { id: 't15', name: 'Kochen',               cat: 'Küche',     pts: 8,  time: 40, cycle: 1 },
+  { id: 't16', name: 'Kühlschrank reinigen', cat: 'Küche',     pts: 10, time: 25, cycle: 30 },
+  { id: 't17', name: 'Müll rausbringen',     cat: 'Küche',     pts: 4,  time: 5,  cycle: 4 },
+  { id: 't18', name: 'Oberflächen reinigen', cat: 'Küche',     pts: 5,  time: 10, cycle: 3 },
+  { id: 't19', name: 'Ofen reinigen',        cat: 'Küche',     pts: 12, time: 40, cycle: 60 },
+  { id: 't20', name: 'Geschirr wegräumen',   cat: 'Küche',     pts: 2,  time: 5,  cycle: 1 },
+  { id: 't21', name: 'Aufräumen',            cat: 'Schlafzimmer', pts: 5, time: 15, cycle: 7 },
+  { id: 't22', name: 'Bettwäsche wechseln',  cat: 'Schlafzimmer', pts: 10, time: 20, cycle: 14 },
+  { id: 't23', name: 'Aufräumen Wohnzimmer', cat: 'Wohnzimmer', pts: 5, time: 15, cycle: 5 },
+  { id: 't24', name: 'Wäsche waschen',       cat: 'Wäsche',    pts: 5,  time: 10, cycle: 4 },
+  { id: 't25', name: 'Wäsche aufhängen',     cat: 'Wäsche',    pts: 4,  time: 10, cycle: 4 },
+  { id: 't26', name: 'Wäsche wegräumen',     cat: 'Wäsche',    pts: 4,  time: 10, cycle: 5 },
+];
+
+// Repetition frequency labels (weekly / bi-weekly etc.) for UX
+function freqLabel(cycle) {
+  if (cycle <= 1) return 'täglich';
+  if (cycle <= 3) return 'alle paar Tage';
+  if (cycle <= 7) return 'wöchentlich';
+  if (cycle <= 14) return 'alle 2 Wochen';
+  if (cycle <= 31) return 'monatlich';
+  if (cycle <= 60) return 'alle 2 Monate';
+  return 'quartalsweise';
+}
+
+// Members — softer palette to match warm vibe
+const MEMBERS = [
+  { id: 'lotta',  name: 'Lotta',  initial: 'L', color: 'rgb(215, 128, 96)',  bg: 'rgb(249, 223, 210)' },
+  { id: 'marcos', name: 'Marcos', initial: 'M', color: 'rgb(138, 152, 190)', bg: 'rgb(224, 230, 244)' },
+];
+
+// Generate seeded, plausible logs (90 days). Each log carries memberId, ts, streak-able.
+function generateLogs() {
+  const logs = [];
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  let seed = 137;
+  const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+
+  // Bias: Marcos dominates Küche (streak). Lotta dominates Bad + Wäsche.
+  // Both share Allgemein roughly.
+  for (let d = 90; d >= 0; d--) {
+    const ts = now - d * day;
+    const n = 2 + Math.floor(rand() * 4);
+    for (let i = 0; i < n; i++) {
+      const task = TASKS[Math.floor(rand() * TASKS.length)];
+      let member;
+      if (task.cat === 'Küche') member = rand() < 0.82 ? 'marcos' : 'lotta';
+      else if (task.cat === 'Bad' || task.cat === 'Wäsche') member = rand() < 0.78 ? 'lotta' : 'marcos';
+      else if (task.cat === 'Wohnzimmer') member = rand() < 0.7 ? 'lotta' : 'marcos';
+      else member = rand() < 0.52 ? 'lotta' : 'marcos';
+      logs.push({
+        taskId: task.id, taskName: task.name, cat: task.cat,
+        pts: task.pts, time: task.time, memberId: member,
+        ts: ts - Math.floor(rand() * day * 0.8),
+      });
+    }
+  }
+  return logs.sort((a, b) => b.ts - a.ts);
+}
+
+const LOGS = generateLogs();
+
+function lastDoneByTask(logs) {
+  const m = {};
+  logs.forEach(l => { if (!m[l.taskId] || l.ts > m[l.taskId]) m[l.taskId] = l; });
+  return m;
+}
+
+// Streak per task: consecutive times same person did it (most recent first)
+function taskStreak(logs, taskId) {
+  const filtered = logs.filter(l => l.taskId === taskId).sort((a, b) => b.ts - a.ts);
+  if (filtered.length === 0) return { member: null, count: 0 };
+  const who = filtered[0].memberId;
+  let c = 0;
+  for (const l of filtered) {
+    if (l.memberId === who) c++;
+    else break;
+  }
+  return { member: who, count: c };
+}
+
+// Category streak: how many consecutive task-logs in category by same member
+function categoryStreak(logs, cat) {
+  const filtered = logs.filter(l => l.cat === cat).sort((a, b) => b.ts - a.ts);
+  if (filtered.length === 0) return { member: null, count: 0, coverage: 0, days: 0 };
+  const who = filtered[0].memberId;
+  let c = 0;
+  for (const l of filtered) {
+    if (l.memberId === who) c++;
+    else break;
+  }
+  // coverage this month
+  const monthAgo = Date.now() - 30 * 86400000;
+  const thisMonth = filtered.filter(l => l.ts >= monthAgo);
+  const byWho = thisMonth.filter(l => l.memberId === who).length;
+  const coverage = thisMonth.length > 0 ? byWho / thisMonth.length : 0;
+  // days since first in current streak
+  const streakLogs = filtered.slice(0, c);
+  const oldestStreak = streakLogs.length > 0 ? streakLogs[streakLogs.length - 1].ts : Date.now();
+  const days = Math.floor((Date.now() - oldestStreak) / 86400000);
+  return { member: who, count: c, coverage, days };
+}
+
+// Quota: how much of the household's monthly expected workload is done
+function monthlyQuota(logs) {
+  // Expected: sum of time across all tasks scaled by (30/cycle) for the month
+  const expected = TASKS.reduce((s, t) => s + (t.time * (30 / t.cycle)), 0);
+  const monthAgo = Date.now() - 30 * 86400000;
+  const done = logs.filter(l => l.ts >= monthAgo).reduce((s, l) => s + l.time, 0);
+  return { done, expected: Math.round(expected), pct: Math.min(1, done / expected) };
+}
+
+function timeByMember(logs, uid, since) {
+  return logs.filter(l => l.memberId === uid && l.ts >= since).reduce((s, l) => s + l.time, 0);
+}
+
+function formatMinutes(min) {
+  if (min < 60) return `${min}min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}min`;
+}
+
+function timeAgo(ts) {
+  const diff = Date.now() - ts;
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return 'heute';
+  if (days === 1) return 'gestern';
+  if (days < 7) return `vor ${days} Tagen`;
+  if (days < 14) return 'letzte Woche';
+  if (days < 60) return `vor ${Math.floor(days/7)} Wochen`;
+  return `vor ${Math.floor(days/30)} Monaten`;
+}
+
+// Find tasks where Member A has been doing all the work (streak >= 3)
+function entlastungCandidates(logs, otherUser) {
+  return TASKS.map(t => {
+    const s = taskStreak(logs, t.id);
+    return { ...t, streak: s };
+  }).filter(t => t.streak.count >= 3 && t.streak.member !== otherUser)
+    .sort((a, b) => b.streak.count - a.streak.count);
+}
+
+Object.assign(window, {
+  CATEGORIES, TASKS, TASK_ICONS, MEMBERS, LOGS,
+  freqLabel, lastDoneByTask, taskStreak, categoryStreak, monthlyQuota,
+  timeByMember, formatMinutes, timeAgo, entlastungCandidates,
+});
+
+
+// ===== primitives.jsx =====
+// Home-Team primitives — warm, cooperative UI atoms
+
+function Avatar({ member, size = 36, ring = false, ringColor }) {
+  const rc = ringColor || member.color;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: member.bg, color: member.color,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontWeight: 600, fontSize: size * 0.42,
+      fontFamily: 'Geist, system-ui',
+      flexShrink: 0, letterSpacing: -0.3,
+      boxShadow: ring ? `0 0 0 2px rgb(253,249,243), 0 0 0 4px ${rc}` : 'none',
+    }}>
+      {member.initial}
+    </div>
+  );
+}
+
+// Soft orb glyph for category — a blurred colored circle, no hard shapes
+function CategoryOrb({ cat, size = 36 }) {
+  const c = window.CATEGORIES[cat];
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: `radial-gradient(circle at 30% 30%, ${c.soft}, ${c.hue})`,
+      flexShrink: 0,
+      boxShadow: `inset 0 0 0 1px rgba(0,0,0,0.04)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}/>
+  );
+}
+
+// Task icon tile — soft filled square with glyph
+function TaskIconTile({ task, size = 44 }) {
+  const c = window.CATEGORIES[task.cat];
+  const glyph = window.TASK_ICONS[task.id] || '◌';
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: size * 0.32,
+      background: c.soft, color: c.deep,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: size * 0.5, flexShrink: 0,
+      fontFamily: 'Geist, system-ui',
+    }}>{glyph}</div>
+  );
+}
+
+// Warm flame — smaller, softer than classic orange
+function Flame({ size = 14, color = 'rgb(215, 128, 96)' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <path d="M13.5 1.5c-.3 3.5-3.2 4.7-4.5 7.5-1 2.2-.5 4.4 1 5.5-.5-1.5.3-2.8 1.5-3.5-.2 2 .8 3.5 2.5 3.5 1.8 0 3-1.4 3-3 0-1.2-.5-2.2-1-3 2 1 4 3 4 6.5a8 8 0 01-16 0c0-5 4.5-7 9.5-13.5z"/>
+    </svg>
+  );
+}
+
+function Heart({ size = 16, filled = false, color = 'rgb(215, 128, 96)' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? color : 'none'} stroke={color} strokeWidth={2}>
+      <path d="M12 21s-7-4.5-9.5-9.5C.8 7.5 3 4 6.5 4c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3 3.5 0 5.7 3.5 4 7.5C19 16.5 12 21 12 21z"/>
+    </svg>
+  );
+}
+
+function Pill({ children, bg = 'rgba(0,0,0,0.05)', fg = 'rgba(0,0,0,0.7)', style }) {
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '4px 10px', borderRadius: 999,
+      background: bg, color: fg,
+      fontSize: 12, fontWeight: 500,
+      fontFamily: 'Geist, system-ui', letterSpacing: -0.1,
+      ...style,
+    }}>{children}</div>
+  );
+}
+
+// Progress ring — thin, soft
+function Ring({ size = 72, stroke = 5, progress = 0.7, color = 'rgb(215,128,96)', track = 'rgba(0,0,0,0.06)', children }) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size/2} cy={size/2} r={r} stroke={track} strokeWidth={stroke} fill="none" />
+        <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none"
+          strokeDasharray={c} strokeDashoffset={c * (1 - progress)}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(.2,.8,.2,1)' }}/>
+      </svg>
+      {children && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{children}</div>
+      )}
+    </div>
+  );
+}
+
+// Gradient orbs for the soft warm background
+function WarmBackdrop({ children, dark = false, intensity = 1 }) {
+  const bg = dark ? 'rgb(28, 22, 26)' : 'rgb(253, 248, 241)';
+  return (
+    <div style={{
+      position: 'relative', height: '100%', width: '100%', overflow: 'hidden',
+      background: bg,
+    }}>
+      {/* Orbs */}
+      <div style={{
+        position: 'absolute', top: -40, right: -60, width: 260, height: 260,
+        borderRadius: '50%', filter: 'blur(55px)',
+        background: dark ? 'rgba(215, 128, 96, 0.25)' : 'rgba(249, 223, 210, 0.95)',
+        opacity: intensity,
+      }}/>
+      <div style={{
+        position: 'absolute', top: 180, left: -80, width: 240, height: 240,
+        borderRadius: '50%', filter: 'blur(60px)',
+        background: dark ? 'rgba(168, 146, 196, 0.18)' : 'rgba(238, 230, 246, 0.9)',
+        opacity: intensity,
+      }}/>
+      <div style={{
+        position: 'absolute', bottom: -60, right: -40, width: 220, height: 220,
+        borderRadius: '50%', filter: 'blur(55px)',
+        background: dark ? 'rgba(138, 152, 190, 0.15)' : 'rgba(224, 230, 244, 0.7)',
+        opacity: intensity * 0.8,
+      }}/>
+      <div style={{ position: 'relative', height: '100%', width: '100%' }}>{children}</div>
+    </div>
+  );
+}
+
+// Icons (hand-drawn minimal)
+const Icons = {
+  home: (s = 22, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 10.5l9-7 9 7V20a2 2 0 01-2 2h-4v-7h-6v7H5a2 2 0 01-2-2z"/>
+    </svg>
+  ),
+  list: (s = 22, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+      <circle cx="3.5" cy="6" r="1.5" fill={c}/><circle cx="3.5" cy="12" r="1.5" fill={c}/><circle cx="3.5" cy="18" r="1.5" fill={c}/>
+    </svg>
+  ),
+  heart: (s = 22, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21s-7-4.5-9.5-9.5C.8 7.5 3 4 6.5 4c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3 3.5 0 5.7 3.5 4 7.5C19 16.5 12 21 12 21z"/>
+    </svg>
+  ),
+  chart: (s = 22, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="4" y1="20" x2="4" y2="10"/><line x1="10" y1="20" x2="10" y2="4"/>
+      <line x1="16" y1="20" x2="16" y2="14"/><line x1="22" y1="20" x2="22" y2="8"/>
+    </svg>
+  ),
+  check: (s = 20, c = 'currentColor', sw = 2.4) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="5 12 10 17 19 7"/>
+    </svg>
+  ),
+  clock: (s = 14, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>
+    </svg>
+  ),
+  back: (s = 22, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 6 9 12 15 18"/>
+    </svg>
+  ),
+  plus: (s = 20, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  ),
+  repeat: (s = 14, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="17 2 21 6 17 10"/><path d="M3 12V9a3 3 0 013-3h15"/>
+      <polyline points="7 22 3 18 7 14"/><path d="M21 12v3a3 3 0 01-3 3H3"/>
+    </svg>
+  ),
+  close: (s = 18, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+    </svg>
+  ),
+};
+
+// Soft hearts rising animation for kudos
+function Hearts({ active, color = 'rgb(215, 128, 96)' }) {
+  const [pieces] = React.useState(() =>
+    Array.from({ length: 8 }, (_, i) => ({
+      id: i,
+      x: 40 + Math.random() * 20,
+      delay: Math.random() * 0.4,
+      dur: 1.6 + Math.random() * 0.8,
+      size: 14 + Math.random() * 12,
+      drift: (Math.random() - 0.5) * 80,
+    }))
+  );
+  if (!active) return null;
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 200 }}>
+      {pieces.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute', bottom: 100, left: `${p.x}%`,
+          animation: `heartRise ${p.dur}s ${p.delay}s cubic-bezier(.4,.6,.7,1) forwards`,
+          ['--drift']: `${p.drift}px`,
+        }}>
+          <Heart size={p.size} filled color={color}/>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Soft confetti — leaves/petals instead of sharp rectangles
+function Petals({ active, count = 36 }) {
+  const colors = ['rgb(215,128,96)', 'rgb(212,164,104)', 'rgb(196,140,170)', 'rgb(168,146,196)', 'rgb(138,152,190)', 'rgb(122,168,170)'];
+  const [pieces] = React.useState(() =>
+    Array.from({ length: count }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      delay: Math.random() * 0.3,
+      dur: 1.6 + Math.random() * 1.2,
+      size: 10 + Math.random() * 10,
+      rot: Math.random() * 360,
+      rotEnd: Math.random() * 540 - 270,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    }))
+  );
+  if (!active) return null;
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 200 }}>
+      {pieces.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute', top: -30, left: `${p.x}%`,
+          width: p.size, height: p.size * 1.4,
+          background: p.color,
+          borderRadius: '60% 40% 60% 40% / 70% 60% 40% 30%',
+          opacity: 0.85,
+          animation: `petalFall ${p.dur}s ${p.delay}s cubic-bezier(.4,.6,.7,1) forwards`,
+          transform: `rotate(${p.rot}deg)`,
+          ['--rotEnd']: `${p.rotEnd}deg`,
+        }}/>
+      ))}
+    </div>
+  );
+}
+
+Object.assign(window, {
+  Avatar, CategoryOrb, TaskIconTile, Flame, Heart, Pill, Ring,
+  WarmBackdrop, Icons, Hearts, Petals,
+});
+
+
+// ===== screen-home.jsx =====
+// Home screen — today's focus, appreciation-first
+
+function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask, currentUser }) {
+  const me = window.MEMBERS.find(m => m.id === currentUser);
+  const other = window.MEMBERS.find(m => m.id !== currentUser);
+  const dark = state.dark;
+
+  // Quota + time
+  const quota = window.monthlyQuota(state.logs);
+  const monthAgo = Date.now() - 30 * 86400000;
+  const myTime = window.timeByMember(state.logs, me.id, monthAgo);
+  const otherTime = window.timeByMember(state.logs, other.id, monthAgo);
+  const totalTime = myTime + otherTime || 1;
+
+  // Due tasks
+  const lastDone = window.lastDoneByTask(state.logs);
+  const now = Date.now();
+  const due = window.TASKS.map(t => {
+    const last = lastDone[t.id];
+    const lastTs = last?.ts;
+    const dueIn = lastTs ? (lastTs + t.cycle * 86400000 - now) / 86400000 : -t.cycle;
+    return { ...t, last, dueIn, overdueDays: Math.max(0, -dueIn) };
+  }).filter(t => t.dueIn <= 1).sort((a, b) => a.dueIn - b.dueIn).slice(0, 5);
+
+  // Entlastung candidate — top streak by other user
+  const entlastung = window.entlastungCandidates(state.logs, me.id)[0];
+
+  // Recent activity by other user (last 7 days) — for kudos
+  const weekAgo = Date.now() - 7 * 86400000;
+  const recentByOther = state.logs
+    .filter(l => l.memberId === other.id && l.ts >= weekAgo)
+    .slice(0, 3);
+
+  const txt = dark ? '#F2ECE4' : '#2A221E';
+  const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)';
+  const cardBg = dark ? 'rgba(50,40,44,0.75)' : 'rgba(255,255,255,0.72)';
+  const cardBorder = dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.04)';
+
+  const myHours = Math.round(myTime / 60 * 10) / 10;
+
+  return (
+    <div style={{ paddingBottom: 140, position: 'relative' }}>
+      {/* Header */}
+      <div style={{ padding: '60px 24px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <div style={{
+              fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 500,
+              color: muted, letterSpacing: 0.5, textTransform: 'uppercase',
+            }}>{new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+            <div style={{
+              fontFamily: '"Instrument Serif", Georgia, serif',
+              fontSize: 40, fontWeight: 400, lineHeight: 1.05, marginTop: 4,
+              letterSpacing: -0.5, color: txt,
+            }}>Hallo, <em style={{ fontStyle: 'italic' }}>{me.name}</em>.</div>
+          </div>
+          <div onClick={() => onNavigate('profile')} style={{ cursor: 'pointer' }}>
+            <Avatar member={me} size={44} />
+          </div>
+        </div>
+      </div>
+
+      {/* Team quota card */}
+      <div style={{
+        margin: '22px 16px 0', padding: '18px 20px 18px',
+        borderRadius: 24, background: cardBg, border: cardBorder,
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{
+            fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 600,
+            color: muted, textTransform: 'uppercase', letterSpacing: 0.5,
+          }}>Team diesen Monat</div>
+          <div style={{
+            fontFamily: 'Geist, system-ui', fontSize: 12, color: muted, fontWeight: 500,
+          }}>{Math.round(quota.pct * 100)}%</div>
+        </div>
+        {/* Shared bar — two-color stacked, no winner/loser */}
+        <div style={{
+          height: 10, borderRadius: 5, overflow: 'hidden', display: 'flex',
+          background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+        }}>
+          <div style={{ width: `${(myTime/totalTime) * quota.pct * 100}%`, background: me.color, transition: 'width 0.8s cubic-bezier(.2,.8,.2,1)' }}/>
+          <div style={{ width: `${(otherTime/totalTime) * quota.pct * 100}%`, background: other.color, transition: 'width 0.8s cubic-bezier(.2,.8,.2,1)' }}/>
+        </div>
+        <div style={{
+          marginTop: 10, display: 'flex', justifyContent: 'space-between',
+          fontFamily: 'Geist, system-ui', fontSize: 12, color: muted,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: me.color }}/>
+            <span>{me.name} · {window.formatMinutes(myTime)}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span>{other.name} · {window.formatMinutes(otherTime)}</span>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: other.color }}/>
+          </div>
+        </div>
+        <div style={{
+          marginTop: 14, paddingTop: 14,
+          borderTop: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)',
+          fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18, lineHeight: 1.3,
+          color: txt, letterSpacing: -0.2,
+        }}>
+          Ihr habt zusammen schon <em>{window.formatMinutes(quota.done)}</em> investiert.
+        </div>
+      </div>
+
+      {/* Entlastungs-Karte — dezent, warm */}
+      {entlastung && (
+        <div style={{
+          margin: '14px 16px 0', padding: '16px 18px',
+          borderRadius: 22,
+          background: `linear-gradient(135deg, ${window.CATEGORIES[entlastung.cat].soft} 0%, ${dark ? 'rgba(215,128,96,0.12)' : 'rgba(249,223,210,0.55)'} 100%)`,
+          border: cardBorder, position: 'relative', overflow: 'hidden',
+          cursor: 'pointer',
+        }} onClick={() => onOpenTask(entlastung)}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <div style={{ position: 'relative' }}>
+              <Avatar member={other} size={40} />
+              <div style={{
+                position: 'absolute', bottom: -2, right: -2,
+                background: 'rgb(253,248,241)', borderRadius: '50%',
+                width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
+              }}>
+                <Flame size={12} />
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18,
+                color: txt, letterSpacing: -0.2, lineHeight: 1.3,
+              }}>
+                {other.name} hat <em>{entlastung.name}</em> die letzten {entlastung.streak.count} Mal gemacht.
+              </div>
+              <div style={{
+                marginTop: 6, fontFamily: 'Geist, system-ui', fontSize: 13,
+                color: muted,
+              }}>Magst du heute dran?</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+            <button onClick={(e) => { e.stopPropagation(); onComplete(entlastung); }} style={{
+              flex: 1, border: 'none', cursor: 'pointer',
+              padding: '10px 14px', borderRadius: 999,
+              background: txt, color: dark ? '#2A221E' : '#FDF8F1',
+              fontFamily: 'Geist, system-ui', fontSize: 13, fontWeight: 600,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}>
+              Ich mach's · {window.formatMinutes(entlastung.time)}
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); onKudos(other, entlastung); }} style={{
+              border: 'none', cursor: 'pointer',
+              padding: '10px 14px', borderRadius: 999,
+              background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.85)',
+              color: txt,
+              fontFamily: 'Geist, system-ui', fontSize: 13, fontWeight: 500,
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              <Heart size={14} filled color={me.color}/>
+              Danke
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Appreciation feed — "was {other} gemacht hat" */}
+      {recentByOther.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <div style={{ padding: '0 24px 10px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <div style={{
+              fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22,
+              color: txt, letterSpacing: -0.2, lineHeight: 1.1,
+            }}>Was <em>{other.name}</em> gemacht hat</div>
+            <div onClick={() => onNavigate('appreciate')} style={{
+              fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 500,
+              color: muted, cursor: 'pointer',
+            }}>mehr</div>
+          </div>
+          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {recentByOther.map((l, i) => {
+              const task = window.TASKS.find(t => t.id === l.taskId);
+              if (!task) return null;
+              return (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 14px', borderRadius: 16,
+                  background: cardBg, border: cardBorder,
+                }}>
+                  <TaskIconTile task={task} size={36}/>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontFamily: 'Geist, system-ui', fontSize: 14, fontWeight: 500,
+                      color: txt, letterSpacing: -0.1,
+                    }}>{l.taskName}</div>
+                    <div style={{
+                      fontSize: 11, color: muted, fontFamily: 'Geist, system-ui',
+                      marginTop: 2,
+                    }}>{window.timeAgo(l.ts)} · {window.formatMinutes(l.time)}</div>
+                  </div>
+                  <button onClick={() => onKudos(other, task, l)} style={{
+                    border: 'none', cursor: 'pointer', width: 34, height: 34,
+                    borderRadius: '50%',
+                    background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Heart size={16} color={me.color}/>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Heute fällig */}
+      <div style={{
+        display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+        padding: '24px 24px 12px',
+      }}>
+        <div style={{
+          fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, lineHeight: 1.1,
+          color: txt, letterSpacing: -0.2,
+        }}>Heute dran</div>
+        <div onClick={() => onNavigate('list')} style={{
+          fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 500,
+          color: muted, cursor: 'pointer',
+        }}>alle ansehen</div>
+      </div>
+
+      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {due.map(t => (
+          <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onOpen={onOpenTask} state={state}/>
+        ))}
+        {due.length === 0 && (
+          <div style={{
+            padding: '32px 20px', textAlign: 'center',
+            fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 20,
+            color: muted, fontStyle: 'italic',
+          }}>alles erledigt — Zeit für Kaffee.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TaskRow({ task, dark, onComplete, onOpen, state, hideFlame = false }) {
+  const streak = window.taskStreak(state.logs, task.id);
+  const lastDoneBy = streak.member ? window.MEMBERS.find(m => m.id === streak.member) : null;
+  const cat = window.CATEGORIES[task.cat];
+  const [done, setDone] = React.useState(false);
+  const [pressed, setPressed] = React.useState(false);
+
+  const handle = (e) => {
+    e.stopPropagation();
+    if (done) return;
+    setDone(true);
+    setTimeout(() => onComplete(task), 280);
+  };
+
+  const txt = dark ? '#F2ECE4' : '#2A221E';
+  const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)';
+  const lastTxt = task.last ? window.timeAgo(task.last.ts) : 'noch nie';
+
+  return (
+    <div onClick={() => onOpen && onOpen(task)} style={{
+      background: dark ? 'rgba(50,40,44,0.6)' : 'rgba(255,255,255,0.75)',
+      borderRadius: 20, padding: '12px 14px',
+      display: 'flex', alignItems: 'center', gap: 12,
+      border: dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.04)',
+      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+      opacity: done ? 0.45 : 1, cursor: 'pointer',
+      transform: done ? 'scale(0.98)' : 'scale(1)',
+      transition: 'all 0.3s cubic-bezier(.2,.8,.2,1)',
+    }}>
+      <TaskIconTile task={task} size={42}/>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontFamily: 'Geist, system-ui', fontSize: 15, fontWeight: 500,
+          color: txt, letterSpacing: -0.15,
+          textDecoration: done ? 'line-through' : 'none',
+        }}>{task.name}</div>
+        <div style={{
+          marginTop: 3, display: 'flex', alignItems: 'center', gap: 6,
+          fontSize: 11.5, color: muted, fontFamily: 'Geist, system-ui',
+        }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+            {Icons.clock(11, muted)} {window.formatMinutes(task.time)}
+          </span>
+          <span>·</span>
+          <span>zuletzt {lastTxt}</span>
+          {!hideFlame && lastDoneBy && streak.count >= 2 && (
+            <>
+              <span>·</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: lastDoneBy.color, fontWeight: 600 }}>
+                <Flame size={10} color={lastDoneBy.color}/>
+                {lastDoneBy.name} ×{streak.count}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+      <button
+        onMouseDown={() => setPressed(true)}
+        onMouseUp={() => setPressed(false)}
+        onMouseLeave={() => setPressed(false)}
+        onClick={handle}
+        style={{
+          border: 'none', cursor: 'pointer',
+          width: 38, height: 38, borderRadius: '50%',
+          background: done ? 'rgb(138, 170, 138)' : cat.hue,
+          color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transform: pressed ? 'scale(0.92)' : 'scale(1)',
+          transition: 'transform 0.15s, background 0.3s',
+          flexShrink: 0,
+        }}
+      >
+        {Icons.check(18, 'white', 2.6)}
+      </button>
+    </div>
+  );
+}
+
+Object.assign(window, { HomeScreen, TaskRow });
+
+
+// ===== screen-list.jsx =====
+// Aufgaben-Liste — grouped by category with streaks per task
+
+function TaskListScreen({ state, onComplete, onOpenTask, onAddTask }) {
+  const dark = state.dark;
+  const [filter, setFilter] = React.useState('Alle');
+  const cats = ['Alle', ...Object.keys(window.CATEGORIES)];
+
+  const lastDone = window.lastDoneByTask(state.logs);
+  const grouped = {};
+  window.TASKS.forEach(t => {
+    if (filter !== 'Alle' && t.cat !== filter) return;
+    const last = lastDone[t.id];
+    (grouped[t.cat] = grouped[t.cat] || []).push({ ...t, last });
+  });
+
+  const txt = dark ? '#F2ECE4' : '#2A221E';
+  const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)';
+
+  return (
+    <div style={{ paddingBottom: 140 }}>
+      <div style={{ padding: '60px 24px 0' }}>
+        <div style={{
+          fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 500,
+          color: muted, letterSpacing: 0.5, textTransform: 'uppercase',
+        }}>26 Aufgaben · 6 Kategorien</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 4 }}>
+          <div style={{
+            fontFamily: '"Instrument Serif", Georgia, serif',
+            fontSize: 40, lineHeight: 1.05, letterSpacing: -0.5, color: txt,
+          }}>Aufgaben</div>
+          <button onClick={onAddTask} style={{
+            border: 'none', cursor: 'pointer',
+            width: 40, height: 40, borderRadius: '50%',
+            background: txt, color: dark ? '#2A221E' : '#FDF8F1',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>{Icons.plus(20, 'currentColor')}</button>
+        </div>
+      </div>
+
+      {/* Filter chips — horizontal scroll */}
+      <div style={{
+        marginTop: 16, padding: '0 16px 4px',
+        display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none',
+      }}>
+        {cats.map(c => {
+          const active = filter === c;
+          const cat = window.CATEGORIES[c];
+          return (
+            <button key={c} onClick={() => setFilter(c)} style={{
+              flexShrink: 0, border: 'none', cursor: 'pointer',
+              padding: '8px 14px', borderRadius: 999,
+              fontFamily: 'Geist, system-ui', fontSize: 13, fontWeight: 500,
+              background: active
+                ? (cat ? cat.hue : txt)
+                : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+              color: active ? '#fff' : (dark ? txt : 'rgba(0,0,0,0.65)'),
+              letterSpacing: -0.1,
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              {cat && <div style={{ width: 6, height: 6, borderRadius: '50%', background: active ? 'rgba(255,255,255,0.85)' : cat.hue }}/>}
+              {c}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Grouped */}
+      <div style={{ padding: '16px 16px 0' }}>
+        {Object.entries(grouped).map(([catName, tasks]) => {
+          const cat = window.CATEGORIES[catName];
+          const catStreak = window.categoryStreak(state.logs, catName);
+          const streakMember = catStreak.member ? window.MEMBERS.find(m => m.id === catStreak.member) : null;
+
+          return (
+            <div key={catName} style={{ marginBottom: 26 }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10, padding: '0 4px 10px',
+              }}>
+                <CategoryOrb cat={catName} size={22}/>
+                <div style={{
+                  fontFamily: 'Geist, system-ui', fontSize: 14, fontWeight: 600,
+                  color: txt, letterSpacing: -0.1,
+                }}>{cat.label}</div>
+                <div style={{ fontSize: 12, color: muted, fontFamily: 'Geist, system-ui' }}>{tasks.length}</div>
+                {streakMember && catStreak.coverage > 0.6 && (
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4,
+                    fontSize: 11, color: streakMember.color, fontFamily: 'Geist, system-ui', fontWeight: 600,
+                  }}>
+                    <Flame size={10} color={streakMember.color}/>
+                    <span>{streakMember.name} · {Math.round(catStreak.coverage * 100)}%</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{
+                display: 'flex', flexDirection: 'column', gap: 6,
+              }}>
+                {tasks.map(t => (
+                  <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete}
+                    onOpen={onOpenTask} state={state}/>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { TaskListScreen });
+
+
+// ===== screen-appreciate.jsx =====
+// Wertschätzung — Appreciation dashboard with Unsung Hero + category streaks
+
+function AppreciateScreen({ state, onNavigate, onKudos, currentUser }) {
+  const dark = state.dark;
+  const me = window.MEMBERS.find(m => m.id === currentUser);
+  const other = window.MEMBERS.find(m => m.id !== currentUser);
+
+  const monthAgo = Date.now() - 30 * 86400000;
+  const weekAgo = Date.now() - 7 * 86400000;
+
+  // Category highlights — who dominates each
+  const catHighlights = Object.keys(window.CATEGORIES).map(c => {
+    const cs = window.categoryStreak(state.logs, c);
+    return { cat: c, ...cs };
+  }).filter(h => h.coverage >= 0.6 && h.member)
+    .sort((a, b) => b.coverage - a.coverage);
+
+  // Unsung hero — biggest current task streak by each member
+  const allStreaks = window.TASKS.map(t => ({ task: t, streak: window.taskStreak(state.logs, t.id) }))
+    .filter(x => x.streak.count >= 3);
+  const heroByMember = {};
+  allStreaks.forEach(x => {
+    const uid = x.streak.member;
+    if (!heroByMember[uid] || x.streak.count > heroByMember[uid].streak.count) heroByMember[uid] = x;
+  });
+
+  // Recent other-user activity for kudos feed
+  const recentByOther = state.logs
+    .filter(l => l.memberId === other.id && l.ts >= weekAgo)
+    .slice(0, 6);
+
+  const txt = dark ? '#F2ECE4' : '#2A221E';
+  const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)';
+  const cardBg = dark ? 'rgba(50,40,44,0.75)' : 'rgba(255,255,255,0.75)';
+  const cardBorder = dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.04)';
+
+  const hero = heroByMember[other.id];
+
+  return (
+    <div style={{ paddingBottom: 140 }}>
+      <div style={{ padding: '60px 24px 0' }}>
+        <div style={{
+          fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 500,
+          color: muted, letterSpacing: 0.5, textTransform: 'uppercase',
+        }}>diesen Monat</div>
+        <div style={{
+          fontFamily: '"Instrument Serif", Georgia, serif',
+          fontSize: 40, lineHeight: 1.05, letterSpacing: -0.5, color: txt, marginTop: 4,
+        }}>Wertschätzung</div>
+      </div>
+
+      {/* Unsung hero card */}
+      {hero && (
+        <div style={{
+          margin: '22px 16px 0', padding: '22px 20px',
+          borderRadius: 26,
+          background: `linear-gradient(140deg, ${other.bg} 0%, ${dark ? 'rgba(50,40,44,0.85)' : 'rgba(255,255,255,0.9)'} 75%)`,
+          border: cardBorder, position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute', top: -40, right: -40, width: 180, height: 180,
+            borderRadius: '50%', filter: 'blur(40px)',
+            background: `${other.color.replace('rgb', 'rgba').replace(')', ', 0.22)')}`,
+          }}/>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Avatar member={other} size={54} ring ringColor={other.color}/>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontFamily: 'Geist, system-ui', fontSize: 11, fontWeight: 600,
+                color: other.color, letterSpacing: 0.8, textTransform: 'uppercase',
+              }}>Stille*r Held*in</div>
+              <div style={{
+                fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 28,
+                color: txt, letterSpacing: -0.3, lineHeight: 1.1, marginTop: 2,
+              }}>{other.name}</div>
+            </div>
+          </div>
+          <div style={{
+            marginTop: 16, fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 20,
+            color: txt, lineHeight: 1.35, letterSpacing: -0.2,
+          }}>
+            Hat <em>{hero.task.name}</em> die letzten <em>{hero.streak.count}×</em> erledigt.
+          </div>
+          <button onClick={() => onKudos(other, hero.task)} style={{
+            marginTop: 14, border: 'none', cursor: 'pointer',
+            padding: '10px 18px', borderRadius: 999,
+            background: txt, color: dark ? '#2A221E' : '#FDF8F1',
+            fontFamily: 'Geist, system-ui', fontSize: 13, fontWeight: 600,
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+          }}>
+            <Heart size={14} filled color={me.color}/>
+            Danke sagen
+          </button>
+        </div>
+      )}
+
+      {/* Category leaderboard — cooperative framing */}
+      <div style={{ marginTop: 26 }}>
+        <div style={{
+          padding: '0 24px 10px',
+          fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22,
+          color: txt, letterSpacing: -0.2,
+        }}>Wer rockt was</div>
+
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {catHighlights.map(h => {
+            const m = window.MEMBERS.find(mm => mm.id === h.member);
+            const cat = window.CATEGORIES[h.cat];
+            return (
+              <div key={h.cat} style={{
+                padding: '14px 16px', borderRadius: 18,
+                background: cardBg, border: cardBorder,
+                display: 'flex', alignItems: 'center', gap: 12,
+              }}>
+                <CategoryOrb cat={h.cat} size={36}/>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontFamily: 'Geist, system-ui', fontSize: 14, fontWeight: 600,
+                    color: txt, letterSpacing: -0.1,
+                  }}>{cat.label}</div>
+                  <div style={{
+                    marginTop: 3, fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 16,
+                    color: muted, letterSpacing: -0.1, lineHeight: 1.2,
+                  }}><em>{m.name}</em> hat <em>{Math.round(h.coverage * 100)}%</em> gemacht</div>
+                </div>
+                <Avatar member={m} size={32}/>
+              </div>
+            );
+          })}
+          {catHighlights.length === 0 && (
+            <div style={{
+              padding: 20, textAlign: 'center',
+              fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18,
+              color: muted, fontStyle: 'italic',
+            }}>alles schön geteilt diesen Monat.</div>
+          )}
+        </div>
+      </div>
+
+      {/* Kudos feed */}
+      <div style={{ marginTop: 26 }}>
+        <div style={{
+          padding: '0 24px 10px',
+          fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22,
+          color: txt, letterSpacing: -0.2,
+        }}>Diese Woche</div>
+
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {recentByOther.map((l, i) => {
+            const task = window.TASKS.find(t => t.id === l.taskId);
+            if (!task) return null;
+            return (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 14px', borderRadius: 16,
+                background: cardBg, border: cardBorder,
+              }}>
+                <TaskIconTile task={task} size={36}/>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontFamily: 'Geist, system-ui', fontSize: 14, fontWeight: 500,
+                    color: txt, letterSpacing: -0.1,
+                  }}>{l.taskName}</div>
+                  <div style={{
+                    fontSize: 11, color: muted, fontFamily: 'Geist, system-ui', marginTop: 2,
+                  }}>{other.name} · {window.timeAgo(l.ts)} · {window.formatMinutes(l.time)}</div>
+                </div>
+                <button onClick={() => onKudos(other, task, l)} style={{
+                  border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%',
+                  background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Heart size={16} color={me.color}/>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { AppreciateScreen });
+
+
+// ===== screen-detail.jsx =====
+// Task detail screen — streak history, description, frequency, last done
+
+function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, currentUser }) {
+  const dark = state.dark;
+  const me = window.MEMBERS.find(m => m.id === currentUser);
+  const cat = window.CATEGORIES[task.cat];
+  const streak = window.taskStreak(state.logs, task.id);
+  const streakMember = streak.member ? window.MEMBERS.find(m => m.id === streak.member) : null;
+
+  // History — last 10 log entries for this task
+  const history = state.logs.filter(l => l.taskId === task.id).slice(0, 10);
+  const last = history[0];
+
+  const txt = dark ? '#F2ECE4' : '#2A221E';
+  const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)';
+  const cardBg = dark ? 'rgba(50,40,44,0.75)' : 'rgba(255,255,255,0.78)';
+  const cardBorder = dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.04)';
+
+  const [done, setDone] = React.useState(false);
+
+  const handleDone = () => {
+    setDone(true);
+    setTimeout(() => onComplete(task), 400);
+  };
+
+  const descriptions = {
+    't1': 'Die Glasflaschen und Gläser in den Container.',
+    't2': 'Zimmerpflanzen mit Wasser versorgen — alle Töpfe checken.',
+    't13': 'Dreckiges Geschirr spülen. Küche bleibt so angenehm.',
+    't15': 'Essen für uns beide zubereiten.',
+    't22': 'Bezug vom Bett abziehen und frisch beziehen.',
+    't24': 'Schmutzwäsche sortieren und in die Maschine.',
+  };
+  const desc = descriptions[task.id] || `Regelmäßige ${cat.label}-Aufgabe. Jede*r im Haushalt kann sie übernehmen.`;
+
+  return (
+    <div style={{ paddingBottom: 140 }}>
+      {/* Hero */}
+      <div style={{
+        padding: '60px 24px 24px',
+        background: `linear-gradient(155deg, ${cat.soft} 0%, transparent 100%)`,
+        position: 'relative',
+      }}>
+        <button onClick={onBack} style={{
+          background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.75)',
+          border: 'none', cursor: 'pointer', padding: 8, borderRadius: '50%',
+          width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: txt,
+        }}>{Icons.back(18, txt)}</button>
+
+        <div style={{ marginTop: 20, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+          <TaskIconTile task={task} size={64}/>
+          <div style={{ flex: 1, paddingTop: 4 }}>
+            <div style={{
+              fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 600,
+              color: cat.deep, textTransform: 'uppercase', letterSpacing: 0.5,
+            }}>{cat.label}</div>
+            <div style={{
+              fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 32,
+              color: txt, letterSpacing: -0.4, lineHeight: 1.1, marginTop: 2,
+            }}>{task.name}</div>
+          </div>
+        </div>
+
+        <div style={{
+          marginTop: 14, fontFamily: 'Geist, system-ui', fontSize: 14,
+          color: muted, lineHeight: 1.5,
+        }}>{desc}</div>
+
+        {/* Meta strip */}
+        <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+          <Pill bg={dark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.7)'} fg={txt}
+            style={{ padding: '6px 12px' }}>
+            {Icons.clock(12, txt)} <span>{window.formatMinutes(task.time)}</span>
+          </Pill>
+          <Pill bg={dark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.7)'} fg={txt}
+            style={{ padding: '6px 12px' }}>
+            {Icons.repeat(12, txt)} <span>{window.freqLabel(task.cycle)}</span>
+          </Pill>
+        </div>
+      </div>
+
+      {/* Streak highlight */}
+      {streak.count >= 2 && streakMember && (
+        <div style={{ padding: '16px 16px 0' }}>
+          <div style={{
+            padding: '16px 18px', borderRadius: 22,
+            background: cardBg, border: cardBorder,
+            display: 'flex', alignItems: 'center', gap: 14,
+          }}>
+            <div style={{ position: 'relative' }}>
+              <Avatar member={streakMember} size={44}/>
+              <div style={{
+                position: 'absolute', bottom: -2, right: -2,
+                background: dark ? 'rgb(28,22,26)' : 'rgb(253,248,241)', borderRadius: '50%',
+                width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
+              }}>
+                <Flame size={13} color={streakMember.color}/>
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18,
+                color: txt, letterSpacing: -0.2, lineHeight: 1.3,
+              }}>
+                <em>{streakMember.name}</em> hat das die letzten <em>{streak.count}×</em> gemacht
+              </div>
+              <div style={{
+                fontFamily: 'Geist, system-ui', fontSize: 12, color: muted, marginTop: 3,
+              }}>
+                {streakMember.id !== currentUser
+                  ? 'Zeit, ihm/ihr den Rücken frei zu halten?'
+                  : 'Weiter so – oder lass den anderen ran.'}
+              </div>
+            </div>
+            {streakMember.id !== currentUser && (
+              <button onClick={() => onKudos(streakMember, task)} style={{
+                border: 'none', cursor: 'pointer', width: 38, height: 38, borderRadius: '50%',
+                background: me.bg,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Heart size={18} filled color={me.color}/>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* History */}
+      <div style={{ marginTop: 20 }}>
+        <div style={{
+          padding: '0 24px 10px',
+          fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22,
+          color: txt, letterSpacing: -0.2,
+        }}>Verlauf</div>
+
+        <div style={{ padding: '0 16px' }}>
+          <div style={{
+            background: cardBg, border: cardBorder, borderRadius: 20, overflow: 'hidden',
+          }}>
+            {history.length === 0 && (
+              <div style={{
+                padding: 20, textAlign: 'center',
+                fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 16,
+                color: muted, fontStyle: 'italic',
+              }}>noch keine Einträge</div>
+            )}
+            {history.map((l, i) => {
+              const m = window.MEMBERS.find(mm => mm.id === l.memberId);
+              return (
+                <div key={i} style={{
+                  padding: '12px 14px',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  borderTop: i > 0 ? (dark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)') : 'none',
+                }}>
+                  <Avatar member={m} size={32}/>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontFamily: 'Geist, system-ui', fontSize: 14, fontWeight: 500,
+                      color: txt, letterSpacing: -0.1,
+                    }}>{m.name}</div>
+                    <div style={{
+                      fontSize: 11, color: muted, fontFamily: 'Geist, system-ui', marginTop: 2,
+                    }}>{window.timeAgo(l.ts)}</div>
+                  </div>
+                  <div style={{
+                    fontFamily: 'Geist, system-ui', fontSize: 12, color: muted,
+                  }}>{window.formatMinutes(l.time)}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Primary CTA */}
+      <div style={{
+        position: 'sticky', bottom: 82, zIndex: 40, padding: '16px 16px 0',
+      }}>
+        <button onClick={handleDone} disabled={done} style={{
+          width: '100%', border: 'none', cursor: done ? 'default' : 'pointer',
+          padding: '16px 20px', borderRadius: 20,
+          background: done ? 'rgb(138, 170, 138)' : cat.hue, color: '#fff',
+          fontFamily: 'Geist, system-ui', fontSize: 15, fontWeight: 600,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          boxShadow: `0 6px 18px ${cat.hue.replace('rgb', 'rgba').replace(')', ', 0.32)')}`,
+          letterSpacing: -0.1,
+          transition: 'all 0.25s cubic-bezier(.2,.8,.2,1)',
+          transform: done ? 'scale(0.98)' : 'scale(1)',
+        }}>
+          {Icons.check(20, '#fff', 2.6)}
+          {done ? 'Erledigt' : `Erledigt · ${window.formatMinutes(task.time)}`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { TaskDetailScreen });
+
+
+// ===== screen-analytics.jsx =====
+// Analytics / Transparenz — neutral balance view
+
+function AnalyticsScreen({ state }) {
+  const dark = state.dark;
+  const monthAgo = Date.now() - 30 * 86400000;
+  const [lotta, marcos] = window.MEMBERS;
+  const lottaTime = window.timeByMember(state.logs, 'lotta', monthAgo);
+  const marcosTime = window.timeByMember(state.logs, 'marcos', monthAgo);
+  const total = lottaTime + marcosTime || 1;
+
+  // Time by category, by member
+  const byCat = {};
+  Object.keys(window.CATEGORIES).forEach(c => {
+    byCat[c] = { lotta: 0, marcos: 0 };
+  });
+  state.logs.filter(l => l.ts >= monthAgo).forEach(l => {
+    byCat[l.cat][l.memberId] += l.time;
+  });
+
+  // Last 14 days bar trend (total per day)
+  const days = [];
+  for (let d = 13; d >= 0; d--) {
+    const start = Date.now() - d * 86400000;
+    const s = new Date(start); s.setHours(0,0,0,0);
+    const ds = s.getTime(); const de = ds + 86400000;
+    const lt = state.logs.filter(l => l.memberId === 'lotta' && l.ts >= ds && l.ts < de).reduce((a,l) => a+l.time, 0);
+    const mt = state.logs.filter(l => l.memberId === 'marcos' && l.ts >= ds && l.ts < de).reduce((a,l) => a+l.time, 0);
+    days.push({ ds, lt, mt });
+  }
+  const maxDay = Math.max(...days.map(d => d.lt + d.mt), 1);
+
+  const txt = dark ? '#F2ECE4' : '#2A221E';
+  const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)';
+  const cardBg = dark ? 'rgba(50,40,44,0.75)' : 'rgba(255,255,255,0.78)';
+  const cardBorder = dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.04)';
+
+  const lottaPct = lottaTime / total;
+  const marcosPct = marcosTime / total;
+
+  return (
+    <div style={{ paddingBottom: 140 }}>
+      <div style={{ padding: '60px 24px 0' }}>
+        <div style={{
+          fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 500,
+          color: muted, letterSpacing: 0.5, textTransform: 'uppercase',
+        }}>Transparenz · 30 Tage</div>
+        <div style={{
+          fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 40,
+          lineHeight: 1.05, letterSpacing: -0.5, color: txt, marginTop: 4,
+        }}>Balance</div>
+      </div>
+
+      {/* Balance bar — neutral visualization */}
+      <div style={{
+        margin: '22px 16px 0', padding: '20px', borderRadius: 24,
+        background: cardBg, border: cardBorder,
+      }}>
+        <div style={{
+          fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 600,
+          color: muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 14,
+        }}>Mental Load</div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ flex: 1, textAlign: 'right' }}>
+            <div style={{
+              fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 28,
+              color: txt, letterSpacing: -0.3, lineHeight: 1,
+            }}>{window.formatMinutes(lottaTime)}</div>
+            <div style={{ fontSize: 12, color: muted, fontFamily: 'Geist, system-ui', marginTop: 4 }}>{lotta.name}</div>
+          </div>
+          <div style={{
+            width: 1, height: 52, background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+          }}/>
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 28,
+              color: txt, letterSpacing: -0.3, lineHeight: 1,
+            }}>{window.formatMinutes(marcosTime)}</div>
+            <div style={{ fontSize: 12, color: muted, fontFamily: 'Geist, system-ui', marginTop: 4 }}>{marcos.name}</div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 18, position: 'relative' }}>
+          <div style={{
+            height: 14, borderRadius: 7, display: 'flex', overflow: 'hidden',
+            background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+          }}>
+            <div style={{ width: `${lottaPct*100}%`, background: lotta.color, transition: 'width 0.8s' }}/>
+            <div style={{ width: `${marcosPct*100}%`, background: marcos.color, transition: 'width 0.8s' }}/>
+          </div>
+          <div style={{
+            position: 'absolute', top: -2, left: '50%', transform: 'translateX(-50%)',
+            width: 2, height: 18, background: dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)',
+          }}/>
+        </div>
+        <div style={{
+          marginTop: 10, fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 16,
+          color: muted, letterSpacing: -0.1, textAlign: 'center', fontStyle: 'italic',
+        }}>
+          {Math.abs(lottaPct - 0.5) < 0.08
+            ? 'ziemlich ausgeglichen.'
+            : `${lottaPct > marcosPct ? lotta.name : marcos.name} trägt gerade mehr.`}
+        </div>
+      </div>
+
+      {/* Category breakdown */}
+      <div style={{ margin: '22px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
+        <div style={{
+          fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 600,
+          color: muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12,
+        }}>Zeit nach Bereich</div>
+        {Object.entries(byCat).map(([c, v]) => {
+          const t = v.lotta + v.marcos;
+          if (t === 0) return null;
+          const lp = v.lotta / t, mp = v.marcos / t;
+          return (
+            <div key={c} style={{ marginTop: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <CategoryOrb cat={c} size={18}/>
+                  <span style={{ fontFamily: 'Geist, system-ui', fontSize: 13, color: txt, fontWeight: 500 }}>{c}</span>
+                </div>
+                <span style={{ fontFamily: 'Geist, system-ui', fontSize: 12, color: muted }}>{window.formatMinutes(t)}</span>
+              </div>
+              <div style={{
+                height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex',
+                background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+              }}>
+                <div style={{ width: `${lp*100}%`, background: lotta.color }}/>
+                <div style={{ width: `${mp*100}%`, background: marcos.color }}/>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 14-day trend */}
+      <div style={{ margin: '22px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
+        <div style={{
+          fontFamily: 'Geist, system-ui', fontSize: 12, fontWeight: 600,
+          color: muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12,
+        }}>Letzte 14 Tage · gemeinsam</div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
+          {days.map((d, i) => {
+            const lh = (d.lt / maxDay) * 100;
+            const mh = (d.mt / maxDay) * 100;
+            return (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'flex-end' }}>
+                <div style={{ height: `${mh}%`, background: marcos.color, borderRadius: '3px 3px 0 0', minHeight: mh > 0 ? 2 : 0 }}/>
+                <div style={{ height: `${lh}%`, background: lotta.color, borderRadius: mh > 0 ? '0 0 3px 3px' : '3px', minHeight: lh > 0 ? 2 : 0 }}/>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8,
+          fontFamily: 'Geist, system-ui', fontSize: 10, color: muted }}>
+          <span>vor 14T</span><span>heute</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { AnalyticsScreen });
+
+
+// ===== app.jsx =====
+// Home-Team — Main app shell
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "darkMode": false,
+  "currentUser": "lotta",
+  "showDesktop": false
+}/*EDITMODE-END*/;
+
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAK_DEFAULTS);
+  const [editMode, setEditMode] = React.useState(false);
+  const [screen, setScreen] = React.useState(() => localStorage.getItem('ht-screen') || 'home');
+  const [openTask, setOpenTask] = React.useState(null);
+  const [logs, setLogs] = React.useState(window.LOGS);
+  const [showPetals, setShowPetals] = React.useState(false);
+  const [showHearts, setShowHearts] = React.useState(false);
+  const [toast, setToast] = React.useState(null);
+
+  React.useEffect(() => { localStorage.setItem('ht-screen', screen); }, [screen]);
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setEditMode(true);
+      else if (e.data?.type === '__deactivate_edit_mode') setEditMode(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  const updateTweak = (k, v) => {
+    const next = { ...tweaks, [k]: v };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+  };
+
+  const state = { logs, dark: tweaks.darkMode };
+
+  const handleComplete = (task) => {
+    const me = window.MEMBERS.find(m => m.id === tweaks.currentUser);
+    const newLog = {
+      taskId: task.id, taskName: task.name, cat: task.cat,
+      pts: task.pts, time: task.time, memberId: tweaks.currentUser, ts: Date.now(),
+    };
+    setLogs(prev => [newLog, ...prev]);
+    setShowPetals(true);
+    setTimeout(() => setShowPetals(false), 2500);
+    setToast({ kind: 'done', task: task.name, time: task.time, color: window.CATEGORIES[task.cat].hue });
+    setTimeout(() => setToast(null), 2600);
+    if (openTask && openTask.id === task.id) setOpenTask(null);
+  };
+
+  const handleKudos = (toMember, task) => {
+    setShowHearts(true);
+    setTimeout(() => setShowHearts(false), 2200);
+    setToast({ kind: 'kudos', name: toMember.name, task: task.name, color: toMember.color });
+    setTimeout(() => setToast(null), 2600);
+  };
+
+  const renderScreen = () => {
+    if (openTask) return (
+      <TaskDetailScreen state={state} task={openTask}
+        onComplete={handleComplete} onBack={() => setOpenTask(null)}
+        onKudos={handleKudos} currentUser={tweaks.currentUser}/>
+    );
+    if (screen === 'home') return <HomeScreen state={state} onComplete={handleComplete}
+      onNavigate={(s) => setScreen(s)} onKudos={handleKudos}
+      onOpenTask={(t) => setOpenTask(t)} currentUser={tweaks.currentUser}/>;
+    if (screen === 'list') return <TaskListScreen state={state} onComplete={handleComplete}
+      onOpenTask={(t) => setOpenTask(t)} onAddTask={() => {}}/>;
+    if (screen === 'appreciate') return <AppreciateScreen state={state}
+      onNavigate={(s) => setScreen(s)} onKudos={handleKudos} currentUser={tweaks.currentUser}/>;
+    if (screen === 'analytics') return <AnalyticsScreen state={state}/>;
+    return null;
+  };
+
+  const dark = tweaks.darkMode;
+  const txt = dark ? '#F2ECE4' : '#2A221E';
+
+  const TabBar = () => {
+    if (openTask) return null;
+    const tabs = [
+      { k: 'home',       l: 'Heute',        icon: Icons.home },
+      { k: 'list',       l: 'Aufgaben',     icon: Icons.list },
+      { k: 'appreciate', l: 'Wertsch.',     icon: Icons.heart },
+      { k: 'analytics',  l: 'Balance',      icon: Icons.chart },
+    ];
+    return (
+      <div style={{ position: 'absolute', bottom: 12, left: 12, right: 12, zIndex: 50 }}>
+        <div style={{
+          background: dark ? 'rgba(40,32,36,0.82)' : 'rgba(253,248,241,0.82)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.04)',
+          borderRadius: 26, padding: '10px 8px 14px',
+          display: 'flex', justifyContent: 'space-around',
+          boxShadow: dark ? '0 8px 28px rgba(0,0,0,0.4)' : '0 4px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)',
+        }}>
+          {tabs.map(t => {
+            const active = screen === t.k;
+            const c = active ? 'rgb(215, 128, 96)' : (dark ? 'rgba(242,236,228,0.5)' : 'rgba(42,34,30,0.45)');
+            return (
+              <button key={t.k} onClick={() => setScreen(t.k)} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                padding: '4px 10px',
+              }}>
+                {t.icon(22, c)}
+                <span style={{
+                  fontSize: 10, fontWeight: active ? 600 : 500,
+                  color: c, fontFamily: 'Geist, system-ui', letterSpacing: -0.1,
+                }}>{t.l}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <style>{`
+        @keyframes heartRise { to { transform: translate(var(--drift), -340px) scale(0.6); opacity: 0; } }
+        @keyframes petalFall { to { transform: translateY(900px) rotate(var(--rotEnd)); opacity: 0; } }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
+
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: 32, minHeight: '100vh', padding: '40px 20px',
+        background: dark
+          ? 'radial-gradient(ellipse at top, rgb(34,26,30) 0%, rgb(14,12,16) 70%)'
+          : 'radial-gradient(ellipse at top, rgb(248,240,230) 0%, rgb(232,222,210) 70%)',
+        flexWrap: 'wrap', fontFamily: 'Geist, system-ui',
+      }}>
+        <IOSDevice dark={dark}>
+          <WarmBackdrop dark={dark}>
+            <div style={{ position: 'relative', height: '100%', overflow: 'auto' }}>
+              {renderScreen()}
+              <TabBar/>
+              <Petals active={showPetals}/>
+              <Hearts active={showHearts} color={window.MEMBERS.find(m => m.id === tweaks.currentUser).color}/>
+              {toast && (
+                <div style={{
+                  position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)',
+                  zIndex: 150, background: dark ? 'rgba(255,255,255,0.95)' : '#2A221E',
+                  color: dark ? '#2A221E' : '#FDF8F1',
+                  padding: '10px 16px', borderRadius: 999,
+                  fontFamily: 'Geist, system-ui', fontSize: 13, fontWeight: 500,
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                  animation: 'toastIn 0.35s cubic-bezier(.2,.8,.2,1)',
+                  display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap',
+                  maxWidth: '85%',
+                }}>
+                  {toast.kind === 'done' ? (
+                    <><div style={{ width: 8, height: 8, borderRadius: '50%', background: toast.color }}/>
+                    <span>{toast.task} · +{window.formatMinutes(toast.time)}</span></>
+                  ) : (
+                    <><Heart size={14} filled color={toast.color}/>
+                    <span style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 15 }}>
+                      Danke an <em>{toast.name}</em>
+                    </span></>
+                  )}
+                </div>
+              )}
+            </div>
+          </WarmBackdrop>
+        </IOSDevice>
+
+        {tweaks.showDesktop && <DesktopShell state={state} tweaks={tweaks}/>}
+      </div>
+
+      {editMode && (
+        <div style={{
+          position: 'fixed', bottom: 20, right: 20, zIndex: 999,
+          background: 'rgba(20,18,22,0.95)', color: 'white',
+          padding: 16, borderRadius: 18, width: 240,
+          backdropFilter: 'blur(20px)', boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+          fontFamily: 'Geist, system-ui',
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 12, letterSpacing: 0.5,
+            textTransform: 'uppercase', opacity: 0.7 }}>Tweaks</div>
+
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 6 }}>Theme</div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[['Hell', false], ['Dunkel', true]].map(([l, v]) => (
+                <button key={l} onClick={() => updateTweak('darkMode', v)} style={{
+                  flex: 1, padding: 8, borderRadius: 8, border: 'none', cursor: 'pointer',
+                  background: tweaks.darkMode === v ? 'rgb(215, 128, 96)' : 'rgba(255,255,255,0.08)',
+                  color: 'white', fontSize: 12, fontWeight: 600,
+                }}>{l}</button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 6 }}>Aktiver User</div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {window.MEMBERS.map(m => (
+                <button key={m.id} onClick={() => updateTweak('currentUser', m.id)} style={{
+                  flex: 1, padding: 8, borderRadius: 8, border: 'none', cursor: 'pointer',
+                  background: tweaks.currentUser === m.id ? m.color : 'rgba(255,255,255,0.08)',
+                  color: 'white', fontSize: 12, fontWeight: 600,
+                }}>{m.name}</button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 6 }}>Springe zu</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+              {[
+                ['home', 'Heute'], ['list', 'Aufgaben'],
+                ['appreciate', 'Wertsch.'], ['analytics', 'Balance'],
+              ].map(([k, l]) => (
+                <button key={k} onClick={() => { setScreen(k); setOpenTask(null); }} style={{
+                  padding: 6, borderRadius: 6, border: 'none', cursor: 'pointer',
+                  background: screen === k && !openTask ? 'rgb(215,128,96)' : 'rgba(255,255,255,0.08)',
+                  color: 'white', fontSize: 11, fontWeight: 500,
+                }}>{l}</button>
+              ))}
+            </div>
+            <button onClick={() => setOpenTask(window.TASKS[12])} style={{
+              width: '100%', marginTop: 8, padding: 8, borderRadius: 8,
+              border: 'none', cursor: 'pointer',
+              background: 'rgba(215, 128, 96, 0.35)', color: 'white',
+              fontSize: 12, fontWeight: 500,
+            }}>Aufgaben-Detail öffnen</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// Desktop companion
+function DesktopShell({ state, tweaks }) {
+  const dark = tweaks.darkMode;
+  const monthAgo = Date.now() - 30 * 86400000;
+  const lottaT = window.timeByMember(state.logs, 'lotta', monthAgo);
+  const marcosT = window.timeByMember(state.logs, 'marcos', monthAgo);
+  const txt = dark ? '#F2ECE4' : '#2A221E';
+  const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)';
+  return (
+    <div style={{
+      width: 720, height: 480, borderRadius: 18, overflow: 'hidden',
+      background: dark ? 'rgb(14,12,16)' : 'rgb(253,248,241)',
+      boxShadow: '0 30px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06)',
+      display: 'flex', fontFamily: 'Geist, system-ui',
+    }}>
+      <div style={{
+        width: 200, background: dark ? 'rgb(20,18,22)' : 'rgb(248,241,232)',
+        padding: 18, borderRight: dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.04)',
+      }}>
+        <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, marginBottom: 18 }}>Home-Team</div>
+        {['Heute', 'Aufgaben', 'Wertschätzung', 'Balance'].map((l, i) => (
+          <div key={l} style={{
+            padding: '8px 10px', borderRadius: 10, marginBottom: 2,
+            background: i === 0 ? 'rgba(215,128,96,0.14)' : 'transparent',
+            color: i === 0 ? 'rgb(215,128,96)' : (dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'),
+            fontSize: 13, fontWeight: i === 0 ? 600 : 500,
+          }}>{l}</div>
+        ))}
+      </div>
+      <div style={{ flex: 1, padding: 24, overflow: 'auto' }}>
+        <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 30, color: txt, letterSpacing: -0.4 }}>Hallo, Lotta.</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14 }}>
+          {window.MEMBERS.map((m, i) => (
+            <div key={m.id} style={{
+              padding: 14, borderRadius: 16, background: dark ? 'rgb(30,26,30)' : '#fff',
+              border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.04)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Avatar member={m} size={28}/>
+                <span style={{ fontSize: 13, fontWeight: 600, color: txt }}>{m.name}</span>
+              </div>
+              <div style={{
+                fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 28, color: m.color,
+                lineHeight: 1, marginTop: 6, letterSpacing: -0.4,
+              }}>{window.formatMinutes(i === 0 ? lottaT : marcosT)}</div>
+              <div style={{ fontSize: 11, color: muted, marginTop: 4 }}>diesen Monat</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+window.App = App;
+
+
+
+// mount
+const _root = ReactDOM.createRoot(document.getElementById("root"));
+_root.render(<App/>);
+
+</script>
+</body></html>
