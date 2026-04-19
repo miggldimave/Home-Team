@@ -8,8 +8,14 @@ const geist = Geist({
 })
 
 export const metadata: Metadata = {
-  title: 'Home-Team',
+  title: 'Home Team',
   description: 'Hausarbeit sichtbar machen und wertschätzen',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Home Team',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
