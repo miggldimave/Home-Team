@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/shared/Avatar'
 import { TaskIconTile } from '@/components/shared/TaskIconTile'
@@ -56,7 +56,7 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
   const entlastung = other ? entlastungCandidates(logs, tasks, me.id)[0] : null
   const weekAgo = Date.now() - 7 * 86400000
   const recentByOther = other
-    ? logs.filter((l) => l.memberId === other.id && l.ts >= weekAgo).slice(0, 3)
+    ? logs.filter((l) => l.memberId === other.id && l.ts >= weekAgo).slice(0, 5)
     : []
 
   // Incoming kudos: sent to me in the last 7 days, newer than last dismiss
@@ -73,10 +73,20 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
       .map((k) => k.task_id!)
   )
 
-  // Local dismiss state for feed items only
   const [dismissedFeedIds, setDismissedFeedIds] = useState<Set<string>>(new Set())
 
-  const dismissFeedItem = (id: string) => setDismissedFeedIds((prev) => new Set([...prev, id]))
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('dismissedFeedIds') ?? '[]') as string[]
+    if (stored.length) setDismissedFeedIds(new Set(stored))
+  }, [])
+
+  const dismissFeedItem = (id: string) => {
+    setDismissedFeedIds((prev) => {
+      const next = new Set([...prev, id])
+      localStorage.setItem('dismissedFeedIds', JSON.stringify([...next]))
+      return next
+    })
+  }
   const visibleFeed = recentByOther.filter((l) => !dismissedFeedIds.has(l.id))
 
   // Group incoming kudos by sender

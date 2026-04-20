@@ -168,7 +168,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
     }
     if (screen === 'home') return <HomeScreen state={state} onComplete={handleComplete} onNavigate={(s) => setScreen(s as TabKey)} onKudos={handleKudos} onOpenTask={setOpenTask} kudosDismissedAt={kudosDismissedAt} onDismissKudos={handleDismissKudos}/>
     if (screen === 'list') return <TaskListScreen state={state} onComplete={handleComplete} onOpenTask={setOpenTask} onAddTask={() => setAddingTask(true)} onEditTask={(task) => setEditingTask(task)} onDeleteTask={handleDeleteTask}/>
-    if (screen === 'appreciate') return <AppreciateScreen state={state} onKudos={handleKudos}/>
+    if (screen === 'appreciate') return <AppreciateScreen state={state} onKudos={handleKudos} onOpenTask={setOpenTask}/>
     if (screen === 'analytics') return <AnalyticsScreen state={state}/>
     return null
   }

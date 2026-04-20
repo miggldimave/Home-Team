@@ -10,9 +10,10 @@ import type { AppState, Task } from '@/lib/types'
 interface AppreciateScreenProps {
   state: AppState
   onKudos: (toMemberId: string, task: Task) => void
+  onOpenTask: (task: Task) => void
 }
 
-export function AppreciateScreen({ state, onKudos }: AppreciateScreenProps) {
+export function AppreciateScreen({ state, onKudos, onOpenTask }: AppreciateScreenProps) {
   const { logs, tasks, profiles, currentProfile, categories, kudos, dark } = state
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
@@ -135,14 +136,14 @@ export function AppreciateScreen({ state, onKudos }: AppreciateScreenProps) {
               if (!task) return null
               const alreadyKudosd = myKudosTaskIds.has(task.id)
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 16, background: cardBg, border: cardBorder }}>
+                <div key={i} onClick={() => onOpenTask(task)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 16, background: cardBg, border: cardBorder, cursor: 'pointer' }}>
                   <TaskIconTile task={task} size={36} categories={categories}/>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{l.taskName}</div>
                     <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{other.display_name} · {timeAgo(l.ts)} · {formatMinutes(l.time)}</div>
                   </div>
                   <button
-                    onClick={() => onKudos(other.id, task)}
+                    onClick={(e) => { e.stopPropagation(); onKudos(other.id, task) }}
                     style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: alreadyKudosd ? (dark ? 'rgba(255,255,255,0.06)' : `${me.color.replace('rgb', 'rgba').replace(')', ', 0.12)')}`) : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'), display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}
                   >
                     <Heart size={16} filled={alreadyKudosd} color={me.color}/>
