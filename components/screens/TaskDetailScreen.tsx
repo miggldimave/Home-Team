@@ -143,7 +143,7 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, onE
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'flex-end' }}>
           <div style={{ width: '100%', background: dark ? 'rgb(28,22,26)' : 'rgb(253,248,241)', borderRadius: '24px 24px 0 0', padding: '28px 20px 40px' }}>
             <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 24, color: txt, marginBottom: 8 }}>Aufgabe löschen?</div>
-            <div style={{ fontSize: 14, color: muted, marginBottom: 24 }}>„{task.name}" wird dauerhaft entfernt.</div>
+            <div style={{ fontSize: 14, color: muted, marginBottom: 24 }}>&bdquo;{task.name}&ldquo; wird dauerhaft entfernt.</div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setConfirmDelete(false)} style={{ flex: 1, padding: '14px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', background: 'transparent', color: muted, fontSize: 14, fontWeight: 500 }}>Abbrechen</button>
               <button onClick={() => { onDelete?.(task.id); setConfirmDelete(false); onBack() }} style={{ flex: 2, padding: '14px', borderRadius: 14, border: 'none', cursor: 'pointer', background: 'rgb(190,60,60)', color: '#fff', fontSize: 14, fontWeight: 600 }}>Löschen</button>
