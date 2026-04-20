@@ -76,7 +76,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [householdId, currentProfile.id, tasks])
+  }, [householdId, currentProfile.id, tasks, supabase])
 
   const handleComplete = async (task: Task) => {
     const optimisticLog: ComputedTaskLog = {
