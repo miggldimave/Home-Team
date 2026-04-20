@@ -81,7 +81,7 @@ export function TaskListScreen({ state, onComplete, onOpenTask, onAddTask, onEdi
           return (
             <div key={catName} style={{ marginBottom: 26 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 4px 10px' }}>
-                <CategoryOrb cat={catName} size={22}/>
+                <CategoryOrb cat={catName} size={22} categories={categories}/>
                 <div style={{ fontSize: 14, fontWeight: 600, color: txt, letterSpacing: -0.1 }}>{catName}</div>
                 <div style={{ fontSize: 12, color: muted }}>{catTasks.length}</div>
                 {streakMember && cs.coverage > 0.6 && (
