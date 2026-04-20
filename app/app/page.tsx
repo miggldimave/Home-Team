@@ -19,7 +19,7 @@ export default async function AppPage() {
 
   const householdId = currentProfile.household_id
 
-  const [householdRes, allProfilesRes, tasksRes, logsRes, categoriesRes] = await Promise.all([
+  const [householdRes, allProfilesRes, tasksRes, logsRes, categoriesRes, kudosRes] = await Promise.all([
     admin.from('households').select().eq('id', householdId).single(),
     admin.from('profiles').select().eq('household_id', householdId),
     admin.from('tasks').select().eq('household_id', householdId).order('category').order('name'),
@@ -31,6 +31,13 @@ export default async function AppPage() {
       .order('completed_at', { ascending: false })
       .limit(500),
     admin.from('categories').select().eq('household_id', householdId).order('name'),
+    admin
+      .from('kudos')
+      .select()
+      .eq('household_id', householdId)
+      .gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(200),
   ])
 
   const household = householdRes.data
@@ -55,6 +62,7 @@ export default async function AppPage() {
       household={household}
       currentProfile={currentProfile}
       categories={categoriesRes.data ?? []}
+      initialKudos={kudosRes.data ?? []}
       householdId={householdId}
     />
   )

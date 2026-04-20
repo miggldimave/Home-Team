@@ -17,7 +17,7 @@ const tabs: { k: Tab; l: string; icon: (s: number, c: string) => React.ReactNode
 
 export function TabBar({ activeTab, onNavigate, dark }: TabBarProps) {
   return (
-    <div style={{ position: 'absolute', bottom: 12, left: 12, right: 12, zIndex: 50 }}>
+    <div style={{ padding: '0 12px calc(12px + env(safe-area-inset-bottom))', zIndex: 50, flexShrink: 0 }}>
       <div style={{
         background: dark ? 'rgba(40,32,36,0.82)' : 'rgba(253,248,241,0.82)',
         backdropFilter: 'blur(24px) saturate(180%)',

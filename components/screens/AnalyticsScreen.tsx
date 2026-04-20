@@ -111,20 +111,18 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
       {/* 14-day trend */}
       <div style={{ margin: '22px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Letzte 14 Tage · gemeinsam</div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}>
-          {days.map((d, i) => {
-            const dayTotal = Object.values(d.byMember).reduce((a, v) => a + v, 0)
-            return (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'flex-end' }}>
-                {[...profiles].reverse().map((p) => {
-                  const h = ((d.byMember[p.id] || 0) / maxDay) * 100
-                  return (
-                    <div key={p.id} style={{ height: `${h}%`, background: p.color, borderRadius: '3px 3px 0 0', minHeight: h > 0 ? 2 : 0 }}/>
-                  )
-                })}
-              </div>
-            )
-          })}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 90 }}>
+          {days.map((d, i) => (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'flex-end' }}>
+              {[...profiles].reverse().map((p) => {
+                const raw = ((d.byMember[p.id] || 0) / maxDay) * 90
+                const h = raw > 0 ? Math.max(2, Math.round(raw)) : 0
+                return (
+                  <div key={p.id} style={{ height: h, background: p.color, borderRadius: '3px 3px 0 0', flexShrink: 0 }}/>
+                )
+              })}
+            </div>
+          ))}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 10, color: muted }}>
           <span>vor 14T</span><span>heute</span>

@@ -22,9 +22,11 @@ interface TaskDetailScreenProps {
   onComplete: (task: Task) => void
   onBack: () => void
   onKudos: (toMemberId: string, task: Task) => void
+  onEdit?: (task: Task) => void
+  onDelete?: (taskId: string) => void
 }
 
-export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos }: TaskDetailScreenProps) {
+export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, onEdit, onDelete }: TaskDetailScreenProps) {
   const { logs, profiles, currentProfile, categories, dark } = state
   const me = currentProfile
   const cat = getCatToken(categories, task.category)
@@ -33,6 +35,7 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos }: T
   const history = logs.filter((l) => l.taskId === task.id).slice(0, 10)
 
   const [done, setDone] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
   const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)'
@@ -45,9 +48,25 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos }: T
     <div style={{ paddingBottom: 140 }}>
       {/* Hero */}
       <div style={{ padding: '60px 24px 24px', background: `linear-gradient(155deg, ${cat.soft} 0%, transparent 100%)`, position: 'relative' }}>
-        <button onClick={onBack} style={{ background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.75)', border: 'none', cursor: 'pointer', padding: 8, borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: txt }}>
-          {Icons.back(18, txt)}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <button onClick={onBack} style={{ background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.75)', border: 'none', cursor: 'pointer', padding: 8, borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: txt }}>
+            {Icons.back(18, txt)}
+          </button>
+          {(onEdit || onDelete) && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              {onEdit && (
+                <button onClick={() => onEdit(task)} style={{ background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.75)', border: 'none', cursor: 'pointer', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {Icons.pencil(16, txt)}
+                </button>
+              )}
+              {onDelete && (
+                <button onClick={() => setConfirmDelete(true)} style={{ background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.75)', border: 'none', cursor: 'pointer', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {Icons.trash(16, 'rgb(190,60,60)')}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
         <div style={{ marginTop: 20, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
           <TaskIconTile task={task} size={64} categories={categories}/>
           <div style={{ flex: 1, paddingTop: 4 }}>
@@ -118,6 +137,20 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos }: T
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'flex-end' }}>
+          <div style={{ width: '100%', background: dark ? 'rgb(28,22,26)' : 'rgb(253,248,241)', borderRadius: '24px 24px 0 0', padding: '28px 20px 40px' }}>
+            <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 24, color: txt, marginBottom: 8 }}>Aufgabe löschen?</div>
+            <div style={{ fontSize: 14, color: muted, marginBottom: 24 }}>„{task.name}" wird dauerhaft entfernt.</div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setConfirmDelete(false)} style={{ flex: 1, padding: '14px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', background: 'transparent', color: muted, fontSize: 14, fontWeight: 500 }}>Abbrechen</button>
+              <button onClick={() => { onDelete?.(task.id); setConfirmDelete(false); onBack() }} style={{ flex: 2, padding: '14px', borderRadius: 14, border: 'none', cursor: 'pointer', background: 'rgb(190,60,60)', color: '#fff', fontSize: 14, fontWeight: 600 }}>Löschen</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CTA */}
       <div style={{ position: 'sticky', bottom: 82, zIndex: 40, padding: '16px 16px 0' }}>

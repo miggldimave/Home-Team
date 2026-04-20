@@ -12,9 +12,11 @@ interface TaskListScreenProps {
   onComplete: (task: Task) => void
   onOpenTask: (task: Task) => void
   onAddTask: () => void
+  onEditTask: (task: Task) => void
+  onDeleteTask: (taskId: string) => void
 }
 
-export function TaskListScreen({ state, onComplete, onOpenTask, onAddTask }: TaskListScreenProps) {
+export function TaskListScreen({ state, onComplete, onOpenTask, onAddTask, onEditTask, onDeleteTask }: TaskListScreenProps) {
   const { tasks, logs, profiles, categories, dark } = state
   const [filter, setFilter] = useState('Alle')
   const catNames = categories.map((c) => c.name)

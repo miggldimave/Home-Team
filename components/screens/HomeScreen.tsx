@@ -22,11 +22,13 @@ interface HomeScreenProps {
   onNavigate: (screen: string) => void
   onKudos: (toMemberId: string, task: Task) => void
   onOpenTask: (task: Task) => void
+  kudosDismissedAt: number
+  onDismissKudos: () => void
 }
 
-export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask }: HomeScreenProps) {
+export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask, kudosDismissedAt, onDismissKudos }: HomeScreenProps) {
   const router = useRouter()
-  const { logs, tasks, profiles, currentProfile, categories, dark } = state
+  const { logs, tasks, profiles, currentProfile, categories, kudos, dark } = state
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
 
@@ -54,6 +56,41 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask 
   const recentByOther = other
     ? logs.filter((l) => l.memberId === other.id && l.ts >= weekAgo).slice(0, 3)
     : []
+
+  // Incoming kudos: sent to me in the last 7 days, newer than last dismiss
+  const incomingKudos = kudos.filter(
+    (k) => k.to_profile_id === me.id &&
+           new Date(k.created_at).getTime() >= weekAgo &&
+           new Date(k.created_at).getTime() > kudosDismissedAt
+  )
+
+  // Which tasks the current user has already kudos'd (for filled hearts)
+  const myKudosTaskIds = new Set(
+    kudos
+      .filter((k) => k.from_profile_id === me.id && k.task_id && new Date(k.created_at).getTime() >= weekAgo)
+      .map((k) => k.task_id!)
+  )
+
+  // Local dismiss state for feed items only
+  const [dismissedFeedIds, setDismissedFeedIds] = useState<Set<string>>(new Set())
+
+  const dismissFeedItem = (id: string) => setDismissedFeedIds((prev) => new Set([...prev, id]))
+  const visibleFeed = recentByOther.filter((l) => !dismissedFeedIds.has(l.id))
+
+  // Group incoming kudos by sender
+  const kudosBySender: Record<string, { name: string; color: string; taskNames: string[] }> = {}
+  incomingKudos.forEach((k) => {
+      const sender = profiles.find((p) => p.id === k.from_profile_id)
+      if (!sender) return
+      if (!kudosBySender[k.from_profile_id]) {
+        kudosBySender[k.from_profile_id] = { name: sender.display_name, color: sender.color, taskNames: [] }
+      }
+      const task = tasks.find((t) => t.id === k.task_id)
+      if (task && !kudosBySender[k.from_profile_id].taskNames.includes(task.name)) {
+        kudosBySender[k.from_profile_id].taskNames.push(task.name)
+      }
+  })
+  const kudosSenders = Object.values(kudosBySender)
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
   const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)'
@@ -142,33 +179,30 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask 
         </div>
       )}
 
-      {/* Appreciation feed */}
-      {recentByOther.length > 0 && other && (
-        <div style={{ marginTop: 24 }}>
-          <div style={{ padding: '0 24px 10px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, letterSpacing: -0.2, lineHeight: 1.1 }}>
-              Was <em>{other.display_name}</em> gemacht hat
-            </div>
-            <button onClick={() => onNavigate('appreciate')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: muted }}>mehr</button>
+      {/* Incoming kudos notification (grouped) */}
+      {kudosSenders.length > 0 && (
+        <div style={{ margin: '14px 16px 0', padding: '14px 14px 14px 18px', borderRadius: 22, background: dark ? 'rgba(50,40,44,0.75)' : 'rgba(255,248,235,0.95)', border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(215,128,96,0.18)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ fontSize: 20, flexShrink: 0 }}>🩷</div>
+          <div style={{ flex: 1 }}>
+            {kudosSenders.map((s, i) => (
+              <div key={i} style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 17, color: txt, letterSpacing: -0.2, lineHeight: 1.35 }}>
+                <em style={{ color: s.color }}>{s.name}</em>
+                {' hat dir gedankt'}
+                {s.taskNames.length > 0 && (
+                  <span style={{ color: muted, fontSize: 14, fontFamily: 'inherit' }}>
+                    {' für '}
+                    <em>{s.taskNames.slice(0, 2).join(', ')}{s.taskNames.length > 2 ? ` +${s.taskNames.length - 2}` : ''}</em>
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
-          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {recentByOther.map((l, i) => {
-              const task = tasks.find((t) => t.id === l.taskId)
-              if (!task) return null
-              return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 16, background: cardBg, border: cardBorder }}>
-                  <TaskIconTile task={task} size={36}/>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{l.taskName}</div>
-                    <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)} · {formatMinutes(l.time)}</div>
-                  </div>
-                  <button onClick={() => onKudos(other.id, task)} style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Heart size={16} color={me.color}/>
-                  </button>
-                </div>
-              )
-            })}
-          </div>
+          <button
+            onClick={onDismissKudos}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+          >
+            {Icons.close(14, muted)}
+          </button>
         </div>
       )}
 
@@ -188,6 +222,46 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask 
           </div>
         )}
       </div>
+
+      {/* Was Person gemacht hat (dismissable) */}
+      {visibleFeed.length > 0 && other && (
+        <div style={{ marginTop: 24 }}>
+          <div style={{ padding: '0 24px 10px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, letterSpacing: -0.2, lineHeight: 1.1 }}>
+              Was <em>{other.display_name}</em> gemacht hat
+            </div>
+            <button onClick={() => onNavigate('appreciate')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: muted }}>mehr</button>
+          </div>
+          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {visibleFeed.map((l, i) => {
+              const task = tasks.find((t) => t.id === l.taskId)
+              if (!task) return null
+              const alreadyKudosd = myKudosTaskIds.has(task.id)
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 16, background: cardBg, border: cardBorder, position: 'relative' }}>
+                  <TaskIconTile task={task} size={36}/>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{l.taskName}</div>
+                    <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)} · {formatMinutes(l.time)}</div>
+                  </div>
+                  <button
+                    onClick={() => { onKudos(other.id, task); dismissFeedItem(l.id) }}
+                    style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: alreadyKudosd ? (dark ? 'rgba(255,255,255,0.06)' : `${me.color.replace('rgb', 'rgba').replace(')', ', 0.12)')}`) : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                  >
+                    <Heart size={16} filled={alreadyKudosd} color={me.color}/>
+                  </button>
+                  <button
+                    onClick={() => dismissFeedItem(l.id)}
+                    style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                  >
+                    {Icons.close(12, muted)}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

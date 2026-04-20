@@ -13,11 +13,18 @@ interface AppreciateScreenProps {
 }
 
 export function AppreciateScreen({ state, onKudos }: AppreciateScreenProps) {
-  const { logs, tasks, profiles, currentProfile, categories, dark } = state
+  const { logs, tasks, profiles, currentProfile, categories, kudos, dark } = state
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
 
   const weekAgo = Date.now() - 7 * 86400000
+
+  // Tasks the current user has already kudos'd this week
+  const myKudosTaskIds = new Set(
+    kudos
+      .filter((k) => k.from_profile_id === me.id && k.task_id && new Date(k.created_at).getTime() >= weekAgo)
+      .map((k) => k.task_id!)
+  )
 
   const catHighlights = categories
     .map((c) => {
@@ -76,9 +83,12 @@ export function AppreciateScreen({ state, onKudos }: AppreciateScreenProps) {
           <div style={{ marginTop: 16, fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 20, color: txt, lineHeight: 1.35, letterSpacing: -0.2 }}>
             Hat <em>{hero.task.name}</em> die letzten <em>{hero.streak.count}×</em> erledigt.
           </div>
-          <button onClick={() => onKudos(other.id, hero.task)} style={{ marginTop: 14, border: 'none', cursor: 'pointer', padding: '10px 18px', borderRadius: 999, background: txt, color: dark ? '#2A221E' : '#FDF8F1', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <Heart size={14} filled color={me.color}/>
-            Danke sagen
+          <button
+            onClick={() => onKudos(other.id, hero.task)}
+            style={{ marginTop: 14, border: 'none', cursor: 'pointer', padding: '10px 18px', borderRadius: 999, background: myKudosTaskIds.has(hero.task.id) ? (dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : txt, color: myKudosTaskIds.has(hero.task.id) ? txt : (dark ? '#2A221E' : '#FDF8F1'), fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}
+          >
+            <Heart size={14} filled={myKudosTaskIds.has(hero.task.id)} color={myKudosTaskIds.has(hero.task.id) ? me.color : (dark ? '#2A221E' : '#FDF8F1')}/>
+            {myKudosTaskIds.has(hero.task.id) ? 'Gedankt' : 'Danke sagen'}
           </button>
         </div>
       )}
@@ -113,7 +123,7 @@ export function AppreciateScreen({ state, onKudos }: AppreciateScreenProps) {
         </div>
       </div>
 
-      {/* Kudos feed */}
+      {/* Diese Woche — with filled hearts */}
       {recentByOther.length > 0 && other && (
         <div style={{ marginTop: 26 }}>
           <div style={{ padding: '0 24px 10px', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, letterSpacing: -0.2 }}>
@@ -123,6 +133,7 @@ export function AppreciateScreen({ state, onKudos }: AppreciateScreenProps) {
             {recentByOther.map((l, i) => {
               const task = tasks.find((t) => t.id === l.taskId)
               if (!task) return null
+              const alreadyKudosd = myKudosTaskIds.has(task.id)
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 16, background: cardBg, border: cardBorder }}>
                   <TaskIconTile task={task} size={36} categories={categories}/>
@@ -130,8 +141,11 @@ export function AppreciateScreen({ state, onKudos }: AppreciateScreenProps) {
                     <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{l.taskName}</div>
                     <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{other.display_name} · {timeAgo(l.ts)} · {formatMinutes(l.time)}</div>
                   </div>
-                  <button onClick={() => onKudos(other.id, task)} style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Heart size={16} color={me.color}/>
+                  <button
+                    onClick={() => onKudos(other.id, task)}
+                    style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: alreadyKudosd ? (dark ? 'rgba(255,255,255,0.06)' : `${me.color.replace('rgb', 'rgba').replace(')', ', 0.12)')}`) : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'), display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}
+                  >
+                    <Heart size={16} filled={alreadyKudosd} color={me.color}/>
                   </button>
                 </div>
               )

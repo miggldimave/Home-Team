@@ -88,5 +88,6 @@ export interface AppState {
   household: Household
   currentProfile: Profile
   categories: Category[]
+  kudos: Kudos[]
   dark: boolean
 }
