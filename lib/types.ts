@@ -15,6 +15,7 @@ export interface Profile {
   initial: string
   color: string
   bg_color: string
+  avatar_url?: string | null
   created_at: string
 }
 

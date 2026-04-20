@@ -58,6 +58,33 @@ export async function changePassword(formData: FormData) {
   return { success: true }
 }
 
+export async function uploadAvatar(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
+
+  const file = formData.get('avatar') as File
+  if (!file || file.size === 0) return { error: 'Keine Datei ausgewählt.' }
+
+  const ext = file.name.split('.').pop() ?? 'jpg'
+  const path = `${user.id}/avatar.${ext}`
+  const bytes = await file.arrayBuffer()
+
+  const admin = createAdminClient()
+  const { error: uploadError } = await admin.storage
+    .from('avatars')
+    .upload(path, bytes, { contentType: file.type, upsert: true })
+
+  if (uploadError) return { error: uploadError.message }
+
+  const { data: { publicUrl } } = admin.storage.from('avatars').getPublicUrl(path)
+
+  const { error } = await admin.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id)
+  if (error) return { error: error.message }
+
+  return { success: true, avatarUrl: publicUrl }
+}
+
 export async function signOut() {
   const supabase = await createClient()
   await supabase.auth.signOut()

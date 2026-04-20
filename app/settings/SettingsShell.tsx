@@ -1,10 +1,10 @@
 'use client'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/shared/Avatar'
 import { Icons } from '@/components/shared/Icons'
 import { MEMBER_COLOR_OPTIONS } from '@/lib/tokens'
-import { updateProfile, updateHousehold, changePassword, signOut } from './actions'
+import { updateProfile, updateHousehold, changePassword, uploadAvatar, signOut } from './actions'
 import type { Profile, Household, ScoringMode } from '@/lib/types'
 
 export function SettingsShell({ profile, household }: { profile: Profile; household: Household }) {
@@ -24,6 +24,9 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordMsg, setPasswordMsg] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatar_url ?? null)
+  const [avatarMsg, setAvatarMsg] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const dark = false
   const txt = '#2A221E'
@@ -32,12 +35,29 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
   const cardBorder = '1px solid rgba(0,0,0,0.04)'
   const bg = 'rgb(253,248,241)'
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    startTransition(async () => {
+      const fd = new FormData()
+      fd.append('avatar', file)
+      const res = await uploadAvatar(fd)
+      if (res?.error) { setAvatarMsg('Fehler: ' + res.error) }
+      else {
+        setAvatarUrl(`${res.avatarUrl}?v=${Date.now()}`)
+        setAvatarMsg('Foto gespeichert.')
+        setTimeout(() => setAvatarMsg(''), 2000)
+      }
+    })
+  }
+
   const previewProfile: Profile = {
     ...profile,
     display_name: displayName || profile.display_name,
     initial: (displayName[0] || profile.display_name[0]).toUpperCase(),
     color: selectedColor.color,
     bg_color: selectedColor.bg,
+    avatar_url: avatarUrl,
   }
 
   const handleProfileSave = () => {
@@ -114,10 +134,20 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
       <div style={{ margin: '24px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 14 }}>Mein Profil</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-          <Avatar member={previewProfile} size={52}/>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <Avatar member={previewProfile} size={52}/>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isPending}
+              style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, opacity: isPending ? 0.5 : 1 }}
+            >
+              📷
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }}/>
+          </div>
           <div>
             <div style={{ fontSize: 16, fontWeight: 600, color: txt, letterSpacing: -0.2 }}>{previewProfile.display_name}</div>
-            <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>Vorschau</div>
+            <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{avatarMsg || 'Foto tippen zum Ändern'}</div>
           </div>
         </div>
 

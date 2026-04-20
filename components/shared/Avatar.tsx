@@ -9,6 +9,17 @@ interface AvatarProps {
 
 export function Avatar({ member, size = 36, ring = false, ringColor }: AvatarProps) {
   const rc = ringColor || member.color
+  const shadow = ring ? `0 0 0 2px rgb(253,249,243), 0 0 0 4px ${rc}` : 'none'
+
+  if (member.avatar_url) {
+    return (
+      <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, boxShadow: shadow, overflow: 'hidden' }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={member.avatar_url} alt={member.display_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+      </div>
+    )
+  }
+
   return (
     <div
       style={{
@@ -25,7 +36,7 @@ export function Avatar({ member, size = 36, ring = false, ringColor }: AvatarPro
         fontFamily: 'inherit',
         flexShrink: 0,
         letterSpacing: '-0.3px',
-        boxShadow: ring ? `0 0 0 2px rgb(253,249,243), 0 0 0 4px ${rc}` : 'none',
+        boxShadow: shadow,
       }}
     >
       {member.initial}
