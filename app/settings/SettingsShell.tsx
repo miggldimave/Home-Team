@@ -47,6 +47,7 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
         setAvatarUrl(`${res.avatarUrl}?v=${Date.now()}`)
         setAvatarMsg('Foto gespeichert.')
         setTimeout(() => setAvatarMsg(''), 2000)
+        router.refresh()
       }
     })
   }
