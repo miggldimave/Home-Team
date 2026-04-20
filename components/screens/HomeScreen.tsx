@@ -240,20 +240,20 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
               if (!task) return null
               const alreadyKudosd = myKudosTaskIds.has(task.id)
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 16, background: cardBg, border: cardBorder, position: 'relative' }}>
+                <div key={i} onClick={() => onOpenTask(task)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 16, background: cardBg, border: cardBorder, position: 'relative', cursor: 'pointer' }}>
                   <TaskIconTile task={task} size={36}/>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{l.taskName}</div>
                     <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)} · {formatMinutes(l.time)}</div>
                   </div>
                   <button
-                    onClick={() => { onKudos(other.id, task); dismissFeedItem(l.id) }}
+                    onClick={(e) => { e.stopPropagation(); onKudos(other.id, task); dismissFeedItem(l.id) }}
                     style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: alreadyKudosd ? (dark ? 'rgba(255,255,255,0.06)' : `${me.color.replace('rgb', 'rgba').replace(')', ', 0.12)')}`) : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                   >
                     <Heart size={16} filled={alreadyKudosd} color={me.color}/>
                   </button>
                   <button
-                    onClick={() => dismissFeedItem(l.id)}
+                    onClick={(e) => { e.stopPropagation(); dismissFeedItem(l.id) }}
                     style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                   >
                     {Icons.close(12, muted)}
