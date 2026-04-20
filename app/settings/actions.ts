@@ -67,13 +67,13 @@ export async function uploadAvatar(formData: FormData) {
   if (!file || file.size === 0) return { error: 'Keine Datei ausgewählt.' }
 
   const ext = file.name.split('.').pop() ?? 'jpg'
-  const path = `${user.id}/avatar.${ext}`
+  const path = `${user.id}/avatar-${Date.now()}.${ext}`
   const bytes = await file.arrayBuffer()
 
   const admin = createAdminClient()
   const { error: uploadError } = await admin.storage
     .from('avatars')
-    .upload(path, bytes, { contentType: file.type, upsert: true })
+    .upload(path, bytes, { contentType: file.type })
 
   if (uploadError) return { error: uploadError.message }
 

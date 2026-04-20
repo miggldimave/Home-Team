@@ -44,7 +44,7 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
       const res = await uploadAvatar(fd)
       if (res?.error) { setAvatarMsg('Fehler: ' + res.error) }
       else {
-        setAvatarUrl(`${res.avatarUrl}?v=${Date.now()}`)
+        setAvatarUrl(res.avatarUrl)
         setAvatarMsg('Foto gespeichert.')
         setTimeout(() => setAvatarMsg(''), 2000)
         router.refresh()
