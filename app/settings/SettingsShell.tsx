@@ -69,7 +69,7 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
       fd.append('bgColor', selectedColor.bg)
       const res = await updateProfile(fd)
       if (res?.error) { setProfileMsg('Fehler: ' + res.error) }
-      else { setProfileMsg('Gespeichert.'); setTimeout(() => setProfileMsg(''), 2000) }
+      else { setProfileMsg('Gespeichert.'); setTimeout(() => setProfileMsg(''), 2000); router.refresh() }
     })
   }
 
@@ -81,7 +81,7 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
       fd.append('scoring_mode', scoringMode)
       const res = await updateHousehold(fd)
       if (res?.error) { setHouseholdMsg('Fehler: ' + res.error) }
-      else { setHouseholdMsg('Gespeichert.'); setTimeout(() => setHouseholdMsg(''), 2000) }
+      else { setHouseholdMsg('Gespeichert.'); setTimeout(() => setHouseholdMsg(''), 2000); router.refresh() }
     })
   }
 
