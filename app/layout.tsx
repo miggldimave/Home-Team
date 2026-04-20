@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist } from 'next/font/google'
+import { DeploymentGuard } from '@/components/shared/DeploymentGuard'
 import './globals.css'
 
 const geist = Geist({
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body style={{ fontFamily: 'var(--font-geist), system-ui, sans-serif' }}>
+        <DeploymentGuard id={process.env.VERCEL_DEPLOYMENT_ID ?? 'dev'} />
         {children}
       </body>
     </html>

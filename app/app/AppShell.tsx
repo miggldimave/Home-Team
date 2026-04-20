@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { WarmBackdrop } from '@/components/shared/WarmBackdrop'
 import { TabBar } from '@/components/shared/TabBar'
 import { Petals } from '@/components/shared/Petals'
@@ -56,7 +56,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
   const [toast, setToast] = useState<Toast | null>(null)
   const [dark] = useState(false)
 
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     const taskMap = Object.fromEntries(tasks.map((t) => [t.id, t]))
