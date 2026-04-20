@@ -139,9 +139,9 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isPending}
-              style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, opacity: isPending ? 0.5 : 1 }}
+              style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: 'none', cursor: 'pointer', background: avatarUrl ? 'transparent' : 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, opacity: isPending ? 0.5 : 1 }}
             >
-              📷
+              {!avatarUrl && '📷'}
             </button>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }}/>
           </div>
