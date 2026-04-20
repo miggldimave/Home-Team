@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/shared/Avatar'
 import { Icons } from '@/components/shared/Icons'
 import { MEMBER_COLOR_OPTIONS } from '@/lib/tokens'
-import { updateProfile, updateHousehold, signOut } from './actions'
-import type { Profile, Household } from '@/lib/types'
+import { updateProfile, updateHousehold, changePassword, signOut } from './actions'
+import type { Profile, Household, ScoringMode } from '@/lib/types'
 
 export function SettingsShell({ profile, household }: { profile: Profile; household: Household }) {
   const router = useRouter()
@@ -16,9 +16,14 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
     MEMBER_COLOR_OPTIONS.find((o) => o.color === profile.color) ?? MEMBER_COLOR_OPTIONS[0]
   )
   const [householdName, setHouseholdName] = useState(household.name)
+  const [scoringMode, setScoringMode] = useState<ScoringMode>(household.scoring_mode)
   const [copied, setCopied] = useState(false)
   const [profileMsg, setProfileMsg] = useState('')
   const [householdMsg, setHouseholdMsg] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordMsg, setPasswordMsg] = useState('')
 
   const dark = false
   const txt = '#2A221E'
@@ -52,9 +57,33 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
       const fd = new FormData()
       fd.append('name', householdName || household.name)
       fd.append('householdId', household.id)
+      fd.append('scoring_mode', scoringMode)
       const res = await updateHousehold(fd)
       if (res?.error) { setHouseholdMsg('Fehler: ' + res.error) }
       else { setHouseholdMsg('Gespeichert.'); setTimeout(() => setHouseholdMsg(''), 2000) }
+    })
+  }
+
+  const handlePasswordChange = () => {
+    if (newPassword !== confirmPassword) {
+      setPasswordMsg('Passwörter stimmen nicht überein.')
+      return
+    }
+    if (newPassword.length < 6) {
+      setPasswordMsg('Passwort muss mindestens 6 Zeichen lang sein.')
+      return
+    }
+    startTransition(async () => {
+      const fd = new FormData()
+      fd.append('currentPassword', currentPassword)
+      fd.append('newPassword', newPassword)
+      const res = await changePassword(fd)
+      if (res?.error) { setPasswordMsg('Fehler: ' + res.error) }
+      else {
+        setPasswordMsg('Passwort geändert.')
+        setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
+        setTimeout(() => setPasswordMsg(''), 3000)
+      }
     })
   }
 
@@ -138,9 +167,29 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
           <input
             value={householdName}
             onChange={(e) => setHouseholdName(e.target.value)}
-            style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 15, color: txt, outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt, outline: 'none', boxSizing: 'border-box' }}
           />
         </label>
+
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: muted, marginBottom: 8 }}>Bewertungsmodus</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(['zeit', 'punkte'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setScoringMode(mode)}
+                style={{
+                  flex: 1, padding: '10px', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, transition: 'all 0.15s',
+                  background: scoringMode === mode ? txt : 'rgba(0,0,0,0.04)',
+                  color: scoringMode === mode ? '#FDF8F1' : muted,
+                }}
+              >
+                {mode === 'zeit' ? '⏱ Zeit' : '⭐ Punkte'}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: muted, marginTop: 6 }}>Achtung: betrifft den gesamten Haushalt.</div>
+        </div>
 
         <button
           onClick={handleHouseholdSave}
@@ -150,6 +199,55 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
           {isPending ? 'Speichern…' : 'Haushalt speichern'}
         </button>
         {householdMsg && <div style={{ marginTop: 8, fontSize: 12, color: muted, textAlign: 'center' }}>{householdMsg}</div>}
+      </div>
+
+      {/* Password section */}
+      <div style={{ margin: '14px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 14 }}>Passwort ändern</div>
+
+        <label style={{ display: 'block', marginBottom: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: muted, marginBottom: 6 }}>Aktuelles Passwort</div>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="current-password"
+            style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt, outline: 'none', boxSizing: 'border-box' }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: muted, marginBottom: 6 }}>Neues Passwort</div>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+            style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt, outline: 'none', boxSizing: 'border-box' }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: muted, marginBottom: 6 }}>Neues Passwort bestätigen</div>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+            style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt, outline: 'none', boxSizing: 'border-box' }}
+          />
+        </label>
+
+        <button
+          onClick={handlePasswordChange}
+          disabled={isPending || !currentPassword || !newPassword || !confirmPassword}
+          style={{ width: '100%', padding: '12px', borderRadius: 14, border: 'none', cursor: 'pointer', background: txt, color: '#FDF8F1', fontSize: 14, fontWeight: 600, opacity: (!currentPassword || !newPassword || !confirmPassword) ? 0.4 : 1 }}
+        >
+          {isPending ? 'Speichern…' : 'Passwort ändern'}
+        </button>
+        {passwordMsg && (
+          <div style={{ marginTop: 8, fontSize: 12, color: passwordMsg.startsWith('Fehler') ? 'rgb(200,60,60)' : muted, textAlign: 'center' }}>{passwordMsg}</div>
+        )}
       </div>
 
       {/* Invite section */}

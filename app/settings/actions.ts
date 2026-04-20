@@ -32,8 +32,28 @@ export async function updateHousehold(formData: FormData) {
   const admin = createAdminClient()
   const name = formData.get('name') as string
   const householdId = formData.get('householdId') as string
+  const scoringMode = formData.get('scoring_mode') as string
 
-  const { error } = await admin.from('households').update({ name }).eq('id', householdId)
+  const { error } = await admin.from('households').update({ name, scoring_mode: scoringMode }).eq('id', householdId)
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+export async function changePassword(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
+
+  const currentPassword = formData.get('currentPassword') as string
+  const newPassword = formData.get('newPassword') as string
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email!,
+    password: currentPassword,
+  })
+  if (signInError) return { error: 'Aktuelles Passwort ist falsch.' }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
   if (error) return { error: error.message }
   return { success: true }
 }
