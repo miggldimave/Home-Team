@@ -48,9 +48,7 @@ export function AppreciateScreen({ state, onKudos, onOpenTask }: AppreciateScree
   })
 
   const hero = other ? heroByMember[other.id] : null
-  const recentByOther = other
-    ? logs.filter((l) => l.memberId === other.id && l.ts >= weekAgo).slice(0, 6)
-    : []
+  const recentAll = logs.filter((l) => l.ts >= weekAgo).slice(0, 6)
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
   const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)'
@@ -124,30 +122,37 @@ export function AppreciateScreen({ state, onKudos, onOpenTask }: AppreciateScree
         </div>
       </div>
 
-      {/* Diese Woche — with filled hearts */}
-      {recentByOther.length > 0 && other && (
+      {/* Diese Woche */}
+      {recentAll.length > 0 && (
         <div style={{ marginTop: 26 }}>
           <div style={{ padding: '0 24px 10px', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, letterSpacing: -0.2 }}>
             Diese Woche
           </div>
           <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {recentByOther.map((l, i) => {
+            {recentAll.map((l, i) => {
               const task = tasks.find((t) => t.id === l.taskId)
-              if (!task) return null
+              const member = profiles.find((p) => p.id === l.memberId)
+              if (!task || !member) return null
+              const isOther = l.memberId !== me.id
               const alreadyKudosd = myKudosTaskIds.has(task.id)
               return (
                 <div key={i} onClick={() => onOpenTask(task)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 16, background: cardBg, border: cardBorder, cursor: 'pointer' }}>
                   <TaskIconTile task={task} size={36} categories={categories}/>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{l.taskName}</div>
-                    <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{other.display_name} · {timeAgo(l.ts)} · {formatMinutes(l.time)}</div>
+                    <div style={{ fontSize: 11, color: muted, marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Avatar member={member} size={16}/>
+                      <span>{member.display_name} · {timeAgo(l.ts)} · {formatMinutes(l.time)}</span>
+                    </div>
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onKudos(other.id, task) }}
-                    style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: alreadyKudosd ? (dark ? 'rgba(255,255,255,0.06)' : `${me.color.replace('rgb', 'rgba').replace(')', ', 0.12)')}`) : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'), display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}
-                  >
-                    <Heart size={16} filled={alreadyKudosd} color={me.color}/>
-                  </button>
+                  {isOther && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onKudos(member.id, task) }}
+                      style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: alreadyKudosd ? (dark ? 'rgba(255,255,255,0.06)' : `${me.color.replace('rgb', 'rgba').replace(')', ', 0.12)')}`) : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'), display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', flexShrink: 0 }}
+                    >
+                      <Heart size={16} filled={alreadyKudosd} color={me.color}/>
+                    </button>
+                  )}
                 </div>
               )
             })}

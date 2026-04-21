@@ -62,8 +62,9 @@ export function formatMinutes(min: number): string {
 }
 
 export function timeAgo(ts: number): string {
-  const diff = Date.now() - ts
-  const days = Math.floor(diff / 86400000)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const day = new Date(ts); day.setHours(0, 0, 0, 0)
+  const days = Math.round((today.getTime() - day.getTime()) / 86400000)
   if (days === 0) return 'heute'
   if (days === 1) return 'gestern'
   if (days < 7) return `vor ${days} Tagen`

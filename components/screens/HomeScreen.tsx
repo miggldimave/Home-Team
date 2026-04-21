@@ -40,8 +40,6 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
 
   const lastDone = lastDoneByTask(logs)
   const now = Date.now()
-  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
-  const doneTaskIds = new Set(logs.filter((l) => l.memberId === me.id && l.ts >= todayStart.getTime()).map((l) => l.taskId))
   const due = tasks
     .map((t) => {
       const last = lastDone[t.id]
@@ -230,7 +228,7 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
 
       <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {due.map((t) => (
-          <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onOpen={onOpenTask} state={state} doneToday={doneTaskIds.has(t.id)}/>
+          <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onOpen={onOpenTask} state={state}/>
         ))}
         {due.length === 0 && (
           <div style={{ padding: '32px 20px', textAlign: 'center', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 20, color: muted, fontStyle: 'italic' }}>
@@ -282,20 +280,23 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
   )
 }
 
-export function TaskRow({ task, dark, onComplete, onOpen, state, hideFlame = false, doneToday = false }: {
+export function TaskRow({ task, dark, onComplete, onOpen, state, hideFlame = false }: {
   task: Task & { last?: ComputedTaskLog }
   dark: boolean
   onComplete: (task: Task) => void
   onOpen?: (task: Task) => void
   state: AppState
   hideFlame?: boolean
-  doneToday?: boolean
 }) {
   const streak = taskStreak(state.logs, task.id)
   const lastDoneBy = streak.member ? state.profiles.find((m) => m.id === streak.member) : null
   const cat = getCatToken(state.categories, task.category)
-  const [done, setDone] = useState(doneToday)
   const [pressed, setPressed] = useState(false)
+
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+  const done = state.logs.some(
+    (l) => l.taskId === task.id && l.memberId === state.currentProfile.id && l.ts >= todayStart.getTime()
+  )
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
   const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)'
@@ -304,7 +305,6 @@ export function TaskRow({ task, dark, onComplete, onOpen, state, hideFlame = fal
   const handle = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (done) return
-    setDone(true)
     setTimeout(() => onComplete(task), 280)
   }
 
