@@ -1,10 +1,12 @@
 'use client'
+import { useState } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
 import { CategoryOrb } from '@/components/shared/CategoryOrb'
 import { TaskIconTile } from '@/components/shared/TaskIconTile'
 import { Heart } from '@/components/shared/Icons'
 import { getCatToken } from '@/lib/tokens'
 import { categoryStreak, taskStreak, timeAgo, formatMinutes } from '@/lib/helpers'
+import { HistoryScreen } from './HistoryScreen'
 import type { AppState, Task } from '@/lib/types'
 
 interface AppreciateScreenProps {
@@ -17,6 +19,11 @@ export function AppreciateScreen({ state, onKudos, onOpenTask }: AppreciateScree
   const { logs, tasks, profiles, currentProfile, categories, kudos, dark } = state
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
+  const [showHistory, setShowHistory] = useState(false)
+
+  if (showHistory) {
+    return <HistoryScreen state={state} onBack={() => setShowHistory(false)} onOpenTask={onOpenTask}/>
+  }
 
   const weekAgo = Date.now() - 7 * 86400000
 
@@ -125,8 +132,9 @@ export function AppreciateScreen({ state, onKudos, onOpenTask }: AppreciateScree
       {/* Diese Woche */}
       {recentAll.length > 0 && (
         <div style={{ marginTop: 26 }}>
-          <div style={{ padding: '0 24px 10px', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, letterSpacing: -0.2 }}>
-            Diese Woche
+          <div style={{ padding: '0 24px 10px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, letterSpacing: -0.2 }}>Diese Woche</div>
+            <button onClick={() => setShowHistory(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: muted }}>mehr</button>
           </div>
           <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
             {recentAll.map((l, i) => {
