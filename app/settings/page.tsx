@@ -9,13 +9,16 @@ export default async function SettingsPage() {
   if (!user) redirect('/auth/login')
 
   const admin = createAdminClient()
-  const profileRes = await admin.from('profiles').select().eq('id', user.id).single()
-  const currentProfile = profileRes.data
-  if (!currentProfile || !currentProfile.household_id) redirect('/onboarding')
+  const { data } = await admin
+    .from('profiles')
+    .select('*, households(*)')
+    .eq('id', user.id)
+    .single()
 
-  const householdRes = await admin.from('households').select().eq('id', currentProfile.household_id).single()
-  const household = householdRes.data
-  if (!household) redirect('/onboarding')
+  if (!data || !data.household_id) redirect('/onboarding')
 
-  return <SettingsShell profile={currentProfile} household={household} />
+  const { households, ...profileFields } = data as typeof data & { households: import('@/lib/types').Household | null }
+  if (!households) redirect('/onboarding')
+
+  return <SettingsShell profile={profileFields} household={households} />
 }

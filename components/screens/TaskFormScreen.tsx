@@ -3,6 +3,7 @@ import { useState, useTransition } from 'react'
 import { Icons } from '@/components/shared/Icons'
 import { AVAILABLE_ICONS, CATEGORY_COLOR_OPTIONS } from '@/lib/tokens'
 import { createTask, updateTask, createCategory } from '@/app/tasks/new/actions'
+import { CategoryManageScreen } from '@/components/screens/CategoryManageScreen'
 import type { Category, ScoringMode, Task } from '@/lib/types'
 
 interface TaskFormScreenProps {
@@ -23,6 +24,7 @@ export function TaskFormScreen({ categories: initialCategories, scoringMode, edi
   const [timeMinutes, setTimeMinutes] = useState(String(editTask?.time_minutes ?? 15))
   const [cycleDays, setCycleDays] = useState(String(editTask?.cycle_days ?? 7))
   const [error, setError] = useState('')
+  const [showCatManage, setShowCatManage] = useState(false)
   const [showCatModal, setShowCatModal] = useState(false)
   const [newCatName, setNewCatName] = useState('')
   const [newCatColorIdx, setNewCatColorIdx] = useState(0)
@@ -74,6 +76,23 @@ export function TaskFormScreen({ categories: initialCategories, scoringMode, edi
     })
   }
 
+  if (showCatManage) {
+    return (
+      <CategoryManageScreen
+        categories={categories}
+        onBack={() => setShowCatManage(false)}
+        onCategoryUpdated={(updated) => {
+          setCategories((prev) => prev.map((c) => c.id === updated.id ? updated : c))
+          if (selectedCat === categories.find((c) => c.id === updated.id)?.name) setSelectedCat(updated.name)
+        }}
+        onCategoryDeleted={(id) => {
+          setCategories((prev) => prev.filter((c) => c.id !== id))
+          if (selectedCat === categories.find((c) => c.id === id)?.name) setSelectedCat(categories.find((c) => c.id !== id)?.name ?? '')
+        }}
+      />
+    )
+  }
+
   return (
     <div style={{ minHeight: '100%', background: bg, padding: '0 0 60px', position: 'relative' }}>
       {/* Header */}
@@ -101,7 +120,12 @@ export function TaskFormScreen({ categories: initialCategories, scoringMode, edi
 
       {/* Category */}
       <div style={{ margin: '10px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
-        <div style={{ fontSize: 12, fontWeight: 500, color: muted, marginBottom: 10 }}>Kategorie</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: muted }}>Kategorie</div>
+          <button onClick={() => setShowCatManage(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 5, color: muted, fontSize: 12, fontWeight: 500 }}>
+            {Icons.pencil(12, muted)} Bearbeiten
+          </button>
+        </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
           {categories.map((c) => (
             <button key={c.id} onClick={() => setSelectedCat(c.name)} style={{ padding: '8px 14px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500, background: selectedCat === c.name ? c.hue : 'rgba(0,0,0,0.04)', color: selectedCat === c.name ? '#fff' : muted, transition: 'all 0.15s' }}>

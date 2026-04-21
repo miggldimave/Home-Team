@@ -45,7 +45,7 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, onE
   const desc = DESCRIPTIONS[task.name] || `Regelmäßige ${cat.label ?? task.category}-Aufgabe. Jede*r im Haushalt kann sie übernehmen.`
 
   return (
-    <div style={{ paddingBottom: 140 }}>
+    <div style={{ paddingBottom: 100 }}>
       {/* Hero */}
       <div style={{ padding: '60px 24px 24px', background: `linear-gradient(155deg, ${cat.soft} 0%, transparent 100%)`, position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -153,7 +153,7 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, onE
       )}
 
       {/* CTA */}
-      <div style={{ position: 'sticky', bottom: 82, zIndex: 40, padding: '16px 16px 0' }}>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, padding: '24px 16px calc(20px + env(safe-area-inset-bottom))', background: 'linear-gradient(to top, rgba(253,248,241,1) 60%, rgba(253,248,241,0) 100%)' }}>
         <button
           onClick={() => { setDone(true); setTimeout(() => onComplete(task), 400) }}
           disabled={done}

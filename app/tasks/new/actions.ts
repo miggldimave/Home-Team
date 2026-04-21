@@ -60,6 +60,32 @@ export async function deleteTask(taskId: string): Promise<{ error?: string }> {
   return {}
 }
 
+export async function updateCategory(categoryId: string, formData: FormData) {
+  const { householdId } = await getHouseholdId()
+  if (!householdId) return { error: 'Kein Haushalt gefunden.' }
+
+  const admin = createAdminClient()
+  const { data, error } = await admin.from('categories').update({
+    name: formData.get('name') as string,
+    hue: formData.get('hue') as string,
+    soft: formData.get('soft') as string,
+    deep: formData.get('deep') as string,
+  }).eq('id', categoryId).eq('household_id', householdId).select().single()
+
+  if (error) return { error: error.message }
+  return { success: true, category: data }
+}
+
+export async function deleteCategory(categoryId: string): Promise<{ error?: string }> {
+  const { householdId } = await getHouseholdId()
+  if (!householdId) return { error: 'Kein Haushalt gefunden.' }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('categories').delete().eq('id', categoryId).eq('household_id', householdId)
+  if (error) return { error: error.message }
+  return {}
+}
+
 export async function createCategory(formData: FormData) {
   const { householdId } = await getHouseholdId()
   if (!householdId) return { error: 'Kein Haushalt gefunden.' }

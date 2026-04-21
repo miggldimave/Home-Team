@@ -76,6 +76,7 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
   const [dismissedFeedIds, setDismissedFeedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    router.prefetch('/settings')
     const stored = JSON.parse(localStorage.getItem('dismissedFeedIds') ?? '[]') as string[]
     if (stored.length) setDismissedFeedIds(new Set(stored))
   }, [])
@@ -122,8 +123,11 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
               Hallo, <em>{me.display_name}</em>.
             </div>
           </div>
-          <button onClick={() => router.push('/settings')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <button onClick={() => router.push('/settings')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: '50%', position: 'relative', outline: `2.5px solid ${me.color}`, outlineOffset: 3 }}>
             <Avatar member={me} size={44} />
+            <div style={{ position: 'absolute', bottom: -4, right: -4, width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {Icons.settings(10, 'rgba(42,34,30,0.65)')}
+            </div>
           </button>
         </div>
       </div>
