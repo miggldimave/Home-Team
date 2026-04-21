@@ -1,5 +1,4 @@
 'use client'
-import { useState } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
 import { CategoryOrb } from '@/components/shared/CategoryOrb'
 import { TaskIconTile } from '@/components/shared/TaskIconTile'
@@ -13,16 +12,18 @@ interface AppreciateScreenProps {
   state: AppState
   onKudos: (toMemberId: string, task: Task) => void
   onOpenTask: (task: Task) => void
+  showHistory: boolean
+  onShowHistory: () => void
+  onHideHistory: () => void
 }
 
-export function AppreciateScreen({ state, onKudos, onOpenTask }: AppreciateScreenProps) {
+export function AppreciateScreen({ state, onKudos, onOpenTask, showHistory, onShowHistory, onHideHistory }: AppreciateScreenProps) {
   const { logs, tasks, profiles, currentProfile, categories, kudos, dark } = state
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
-  const [showHistory, setShowHistory] = useState(false)
 
   if (showHistory) {
-    return <HistoryScreen state={state} onBack={() => setShowHistory(false)} onOpenTask={onOpenTask}/>
+    return <HistoryScreen state={state} onBack={onHideHistory} onOpenTask={onOpenTask}/>
   }
 
   const weekAgo = Date.now() - 7 * 86400000
@@ -134,7 +135,7 @@ export function AppreciateScreen({ state, onKudos, onOpenTask }: AppreciateScree
         <div style={{ marginTop: 26 }}>
           <div style={{ padding: '0 24px 10px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
             <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, color: txt, letterSpacing: -0.2 }}>Diese Woche</div>
-            <button onClick={() => setShowHistory(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: muted }}>mehr</button>
+            <button onClick={onShowHistory} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: muted }}>mehr</button>
           </div>
           <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
             {recentAll.map((l, i) => {

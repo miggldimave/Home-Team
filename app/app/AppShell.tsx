@@ -46,6 +46,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
   const [logs, setLogs] = useState<ComputedTaskLog[]>(initialLogs)
   const [kudos, setKudos] = useState<Kudos[]>(initialKudos)
   const [kudosDismissedAt, setKudosDismissedAt] = useState(0)
+  const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
     const stored = parseInt(localStorage.getItem('kudosDismissedAt') ?? '0', 10)
@@ -139,7 +140,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
   const state: AppState = { logs, tasks, profiles, household, currentProfile, categories, kudos, dark }
 
   const isFormOpen = addingTask || editingTask !== null
-  const showTabBar = !openTask && !isFormOpen
+  const showTabBar = !openTask && !isFormOpen && !showHistory
 
   const renderScreen = () => {
     if (isFormOpen) {
@@ -168,7 +169,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
     }
     if (screen === 'home') return <HomeScreen state={state} onComplete={handleComplete} onNavigate={(s) => setScreen(s as TabKey)} onKudos={handleKudos} onOpenTask={setOpenTask} kudosDismissedAt={kudosDismissedAt} onDismissKudos={handleDismissKudos}/>
     if (screen === 'list') return <TaskListScreen state={state} onComplete={handleComplete} onOpenTask={setOpenTask} onAddTask={() => setAddingTask(true)} onEditTask={(task) => setEditingTask(task)} onDeleteTask={handleDeleteTask}/>
-    if (screen === 'appreciate') return <AppreciateScreen state={state} onKudos={handleKudos} onOpenTask={setOpenTask}/>
+    if (screen === 'appreciate') return <AppreciateScreen state={state} onKudos={handleKudos} onOpenTask={setOpenTask} showHistory={showHistory} onShowHistory={() => setShowHistory(true)} onHideHistory={() => setShowHistory(false)}/>
     if (screen === 'analytics') return <AnalyticsScreen state={state}/>
     return null
   }
@@ -185,8 +186,8 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
     }}>
       <div style={{ width: '100%', maxWidth: 430, minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
         <WarmBackdrop dark={dark}>
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', position: 'relative' }}>
-            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 16 }}>
+          <div style={{ height: '100dvh', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
               {renderScreen()}
             </div>
             {showTabBar && (

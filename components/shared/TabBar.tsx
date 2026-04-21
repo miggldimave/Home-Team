@@ -17,7 +17,8 @@ const tabs: { k: Tab; l: string; icon: (s: number, c: string) => React.ReactNode
 
 export function TabBar({ activeTab, onNavigate, dark }: TabBarProps) {
   return (
-    <div style={{ padding: '0 12px calc(12px + env(safe-area-inset-bottom))', zIndex: 50, flexShrink: 0 }}>
+    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 50, padding: '24px 12px calc(12px + env(safe-area-inset-bottom))', background: dark ? 'linear-gradient(to bottom, transparent, rgb(28,22,26) 40%)' : 'linear-gradient(to bottom, transparent, rgb(253,248,241) 40%)', pointerEvents: 'none' }}>
+      <div style={{ pointerEvents: 'auto' }}>
       <div style={{
         background: dark ? 'rgba(40,32,36,0.82)' : 'rgba(253,248,241,0.82)',
         backdropFilter: 'blur(24px) saturate(180%)',
@@ -59,6 +60,7 @@ export function TabBar({ activeTab, onNavigate, dark }: TabBarProps) {
             </button>
           )
         })}
+      </div>
       </div>
     </div>
   )
