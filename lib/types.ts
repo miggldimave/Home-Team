@@ -46,6 +46,7 @@ export interface Kudos {
   task_id: string | null
   household_id: string
   created_at: string
+  reason?: string | null
 }
 
 export interface CategoryToken {

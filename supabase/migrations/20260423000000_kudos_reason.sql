@@ -1,0 +1,1 @@
+ALTER TABLE kudos ADD COLUMN IF NOT EXISTS reason text;

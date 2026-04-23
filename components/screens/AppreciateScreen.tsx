@@ -1,16 +1,16 @@
 'use client'
 import { Avatar } from '@/components/shared/Avatar'
-import { CategoryOrb } from '@/components/shared/CategoryOrb'
 import { TaskIconTile } from '@/components/shared/TaskIconTile'
 import { Heart } from '@/components/shared/Icons'
 import { getCatToken } from '@/lib/tokens'
 import { categoryStreak, taskStreak, timeAgo, formatMinutes } from '@/lib/helpers'
 import { HistoryScreen } from './HistoryScreen'
+import { InvitePrompt } from '@/components/shared/InvitePrompt'
 import type { AppState, Task } from '@/lib/types'
 
 interface AppreciateScreenProps {
   state: AppState
-  onKudos: (toMemberId: string, task: Task) => void
+  onKudos: (toMemberId: string, task: Task, reason?: string) => void
   onOpenTask: (task: Task) => void
   showHistory: boolean
   onShowHistory: () => void
@@ -33,6 +33,17 @@ export function AppreciateScreen({ state, onKudos, onOpenTask, showHistory, onSh
     kudos
       .filter((k) => k.from_profile_id === me.id && k.task_id && new Date(k.created_at).getTime() >= weekAgo)
       .map((k) => k.task_id!)
+  )
+
+  // Track category kudos already sent this week: key = `${to_profile_id}:${category}`
+  const myKudosCategoryKeys = new Set(
+    kudos
+      .filter((k) => k.from_profile_id === me.id && k.reason === 'category' && new Date(k.created_at).getTime() >= weekAgo)
+      .map((k) => {
+        const t = tasks.find((t) => t.id === k.task_id)
+        return t ? `${k.to_profile_id}:${t.category}` : null
+      })
+      .filter((x): x is string => x !== null)
   )
 
   const catHighlights = categories
@@ -72,6 +83,10 @@ export function AppreciateScreen({ state, onKudos, onOpenTask, showHistory, onSh
         </div>
       </div>
 
+      {profiles.length < 2 && (
+        <InvitePrompt inviteCode={state.household.invite_code} dark={dark}/>
+      )}
+
       {/* Unsung hero card */}
       {hero && other && (
         <div style={{
@@ -91,7 +106,7 @@ export function AppreciateScreen({ state, onKudos, onOpenTask, showHistory, onSh
             Hat <em>{hero.task.name}</em> die letzten <em>{hero.streak.count}×</em> erledigt.
           </div>
           <button
-            onClick={() => onKudos(other.id, hero.task)}
+            onClick={() => onKudos(other.id, hero.task, 'streak')}
             style={{ marginTop: 14, border: 'none', cursor: 'pointer', padding: '10px 18px', borderRadius: 999, background: myKudosTaskIds.has(hero.task.id) ? (dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : txt, color: myKudosTaskIds.has(hero.task.id) ? txt : (dark ? '#2A221E' : '#FDF8F1'), fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}
           >
             <Heart size={14} filled={myKudosTaskIds.has(hero.task.id)} color={myKudosTaskIds.has(hero.task.id) ? me.color : (dark ? '#2A221E' : '#FDF8F1')}/>
@@ -109,16 +124,29 @@ export function AppreciateScreen({ state, onKudos, onOpenTask, showHistory, onSh
           {catHighlights.map((h) => {
             const m = profiles.find((mm) => mm.id === h.member)
             if (!m) return null
+            const isOther = m.id !== me.id
+            const representativeTask = (() => {
+              const log = logs.filter((l) => l.cat === h.cat && l.memberId === h.member).sort((a, b) => b.ts - a.ts)[0]
+              return tasks.find((t) => t.id === log?.taskId)
+            })()
+            const alreadyKudosd = myKudosCategoryKeys.has(`${m.id}:${h.cat}`)
             return (
               <div key={h.cat} style={{ padding: '14px 16px', borderRadius: 18, background: cardBg, border: cardBorder, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <CategoryOrb cat={h.cat} size={36} categories={categories}/>
+                <Avatar member={m} size={36} ring ringColor={m.color}/>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: txt, letterSpacing: -0.1 }}>{h.cat}</div>
                   <div style={{ marginTop: 3, fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 16, color: muted, letterSpacing: -0.1, lineHeight: 1.2 }}>
                     <em>{m.display_name}</em> hat <em>{Math.round(h.coverage * 100)}%</em> gemacht
                   </div>
                 </div>
-                <Avatar member={m} size={32}/>
+                {isOther && representativeTask && (
+                  <button
+                    onClick={() => onKudos(m.id, representativeTask, 'category')}
+                    style={{ border: 'none', cursor: 'pointer', width: 34, height: 34, borderRadius: '50%', background: alreadyKudosd ? (dark ? 'rgba(255,255,255,0.06)' : `${me.color.replace('rgb', 'rgba').replace(')', ', 0.12)')}`) : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'), display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', flexShrink: 0 }}
+                  >
+                    <Heart size={16} filled={alreadyKudosd} color={me.color}/>
+                  </button>
+                )}
               </div>
             )
           })}

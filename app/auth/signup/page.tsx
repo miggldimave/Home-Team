@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
-import Link from 'next/link'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -35,7 +34,7 @@ export default function SignupPage() {
       <div style={{ width: '100%', maxWidth: 380 }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 48, color: '#2A221E', letterSpacing: -1, lineHeight: 1 }}>
-            Home-Team
+            Kudo
           </div>
           <div style={{ marginTop: 10, fontSize: 15, color: 'rgba(42,34,30,0.55)' }}>
             Konto erstellen
@@ -47,6 +46,8 @@ export default function SignupPage() {
             <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(42,34,30,0.6)', letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>E-Mail</label>
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -82,12 +83,12 @@ export default function SignupPage() {
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: 24, fontSize: 14, color: 'rgba(42,34,30,0.55)' }}>
-          Schon ein Konto?{' '}
-          <Link href="/auth/login" style={{ color: 'rgb(215, 128, 96)', fontWeight: 600, textDecoration: 'none' }}>
-            Einloggen
-          </Link>
-        </div>
+        <button
+          onClick={() => router.push('/auth/login')}
+          style={{ marginTop: 12, width: '100%', padding: '14px', borderRadius: 14, border: 'none', background: 'rgb(215,128,96)', color: '#FDF8F1', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+        >
+          Schon ein Konto? Einloggen
+        </button>
       </div>
     </div>
   )

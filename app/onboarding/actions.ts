@@ -2,9 +2,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { createAdminClient } from '@/lib/supabase-admin'
-import { DEFAULT_TASKS, DEFAULT_CATEGORIES } from '@/lib/tokens'
+import { TASK_SUGGESTIONS, DEFAULT_CATEGORIES } from '@/lib/tokens'
 
-export async function createHousehold(formData: FormData) {
+export async function createHouseholdWithTasks(formData: FormData, selectedTaskNames: string[]) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -26,13 +26,16 @@ export async function createHousehold(formData: FormData) {
     return { error: hhError?.message ?? 'Fehler beim Erstellen.' }
   }
 
-  await admin.from('tasks').insert(
-    DEFAULT_TASKS.map((t) => ({ ...t, household_id: household.id }))
-  )
-
   await admin.from('categories').insert(
     DEFAULT_CATEGORIES.map((c) => ({ ...c, household_id: household.id }))
   )
+
+  if (selectedTaskNames.length > 0) {
+    const tasks = TASK_SUGGESTIONS
+      .filter((t) => selectedTaskNames.includes(t.name))
+      .map((t) => ({ ...t, household_id: household.id }))
+    await admin.from('tasks').insert(tasks)
+  }
 
   const { error: profileError } = await admin.from('profiles').upsert({
     id: user.id,

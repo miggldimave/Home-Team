@@ -2,11 +2,12 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Home Team',
-    short_name: 'Home Team',
+    name: 'Kudo',
+    short_name: 'Kudo',
     description: 'Hausarbeit sichtbar machen und wertschätzen',
     start_url: '/',
     display: 'standalone',
+    orientation: 'portrait',
     background_color: '#F5EFE6',
     theme_color: '#F5EFE6',
     icons: [

@@ -50,6 +50,19 @@ export const DEFAULT_CATEGORIES = [
   { name: 'Wäsche',       hue: 'rgb(196, 140, 170)', soft: 'rgb(247, 226, 236)', deep: 'rgb(106, 48, 78)' },
 ]
 
+export const TASK_SUGGESTIONS: { name: string; category: string; icon: string; pts: number; time_minutes: number; cycle_days: number }[] = [
+  { name: 'Kochen',               category: 'Essen',        icon: '🥘', pts: 8,  time_minutes: 40, cycle_days: 1  },
+  { name: 'Abwaschen',            category: 'Essen',        icon: '🍽️', pts: 5,  time_minutes: 15, cycle_days: 1  },
+  { name: 'Müll rausbringen',     category: 'Putzen',        icon: '🗑️', pts: 4,  time_minutes: 5,  cycle_days: 4  },
+  { name: 'Staubsaugen',          category: 'Putzen',    icon: '🧹', pts: 8,  time_minutes: 20, cycle_days: 7  },
+  { name: 'Oberflächen putzen',   category: 'Putzen',    icon: '🧽', pts: 6,  time_minutes: 15, cycle_days: 7  },
+  { name: 'Wocheneinkauf',        category: 'Essen',    icon: '🛒', pts: 12, time_minutes: 60, cycle_days: 7  },
+  { name: 'Bad putzen',           category: 'Putzen',          icon: '🚿', pts: 14, time_minutes: 35, cycle_days: 10 },
+  { name: 'Wäsche waschen',       category: 'Wäsche',       icon: '🧺', pts: 5,  time_minutes: 10, cycle_days: 4  },
+  { name: 'Wäsche aufhängen',     category: 'Wäsche',       icon: '🧺', pts: 4,  time_minutes: 10, cycle_days: 4  },
+  { name: 'Bettwäsche wechseln',  category: 'Wäsche', icon: '🛏️', pts: 10, time_minutes: 20, cycle_days: 14 },
+]
+
 export const DEFAULT_TASKS = [
   { name: 'Altglas wegbringen',    category: 'Allgemein',    icon: '♻️', pts: 8,  time_minutes: 12, cycle_days: 14 },
   { name: 'Blumen gießen',         category: 'Allgemein',    icon: '🪴', pts: 3,  time_minutes: 5,  cycle_days: 4 },

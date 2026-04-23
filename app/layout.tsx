@@ -16,13 +16,13 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Home Team',
+  title: 'Kudo',
   description: 'Hausarbeit sichtbar machen und wertschätzen',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Home Team',
+    title: 'Kudo',
   },
 }
 

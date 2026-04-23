@@ -27,7 +27,7 @@ Prototyp wird nativ aus dem Claude Designer übergeben. Jeden Screen 1:1 nach Ä
 ## Datenbank
 - Schema NIEMALS manuell im Dashboard ändern — immer Migration erstellen.
 - `npx supabase db push` nur gegen das Entwicklungsprojekt.
-- Produktions-Migrationen laufen automatisch via CI beim Merge auf `main`.
+- Ab Prod-Umstellung: Produktions-Migrationen laufen automatisch via CI beim Merge von `dev` nach `main`.
 
 ## Umgebungsvariablen
 - `.env.local` niemals committen.
@@ -35,10 +35,12 @@ Prototyp wird nativ aus dem Claude Designer übergeben. Jeden Screen 1:1 nach Ä
 - Produktions-Variablen ausschließlich im Vercel-Dashboard pflegen.
 
 ## Git-Workflow
-- Kein direkter Push auf `main` — immer via Pull Request.
-- Branch-Benennung: `funktion/`, `fehler/`, `wartung/`
+**Aktuelle Phase: Development** — `main` ist die Entwicklungsbranche. Direkte Pushes auf `main` sind erlaubt, solange die App noch nicht produktiv läuft.
+- Branch-Benennung (optional für größere Features/Experimente): `funktion/`, `fehler/`, `wartung/`
 - Vor jedem neuen Feature: `git pull origin main` + `npx supabase db push`.
-- Pull-Request-Text: Was ändert sich? / DB-Migration enthalten? / Neue Umgebungsvariablen? / Wie testen?
+- Pull-Request-Text (falls über Branch gearbeitet wird): Was ändert sich? / DB-Migration enthalten? / Neue Umgebungsvariablen? / Wie testen?
+
+**Umstellung bei erster Prod-Version:** Sobald die erste produktionsreife Version live geht, wird `main` zur Prod-Branche. Zusätzlich wird `dev` angelegt; direkte Pushes auf `main` sind dann nicht mehr erlaubt — Features laufen über `dev` → PR nach `main`.
 
 ## Erlaubte Befehle
 ```

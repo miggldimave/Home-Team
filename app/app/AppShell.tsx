@@ -94,7 +94,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
     await supabase.from('task_logs').insert({ task_id: task.id, profile_id: currentProfile.id, household_id: householdId })
   }
 
-  const handleKudos = async (toMemberId: string, task: Task) => {
+  const handleKudos = async (toMemberId: string, task: Task, reason?: string) => {
     const toMember = profiles.find((p) => p.id === toMemberId)
     const optimisticKudos: Kudos = {
       id: `optimistic-${Date.now()}`,
@@ -103,13 +103,14 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
       task_id: task.id,
       household_id: householdId,
       created_at: new Date().toISOString(),
+      reason: reason ?? null,
     }
     setKudos((prev) => [optimisticKudos, ...prev])
     setShowHearts(true)
     setTimeout(() => setShowHearts(false), 2200)
     setToast({ kind: 'kudos', name: toMember?.display_name, color: toMember?.color ?? 'rgb(215,128,96)' })
     setTimeout(() => setToast(null), 2600)
-    await supabase.from('kudos').insert({ from_profile_id: currentProfile.id, to_profile_id: toMemberId, task_id: task.id, household_id: householdId })
+    await supabase.from('kudos').insert({ from_profile_id: currentProfile.id, to_profile_id: toMemberId, task_id: task.id, household_id: householdId, reason: reason ?? null })
   }
 
   const handleTaskSaved = (task: Task) => {
@@ -167,7 +168,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
         />
       )
     }
-    if (screen === 'home') return <HomeScreen state={state} onComplete={handleComplete} onNavigate={(s) => setScreen(s as TabKey)} onKudos={handleKudos} onOpenTask={setOpenTask} kudosDismissedAt={kudosDismissedAt} onDismissKudos={handleDismissKudos}/>
+    if (screen === 'home') return <HomeScreen state={state} onComplete={handleComplete} onNavigate={(s) => setScreen(s as TabKey)} onKudos={handleKudos} onOpenTask={setOpenTask} onAddTask={() => setAddingTask(true)} kudosDismissedAt={kudosDismissedAt} onDismissKudos={handleDismissKudos}/>
     if (screen === 'list') return <TaskListScreen state={state} onComplete={handleComplete} onOpenTask={setOpenTask} onAddTask={() => setAddingTask(true)} onEditTask={(task) => setEditingTask(task)} onDeleteTask={handleDeleteTask}/>
     if (screen === 'appreciate') return <AppreciateScreen state={state} onKudos={handleKudos} onOpenTask={setOpenTask} showHistory={showHistory} onShowHistory={() => setShowHistory(true)} onHideHistory={() => setShowHistory(false)}/>
     if (screen === 'analytics') return <AnalyticsScreen state={state}/>

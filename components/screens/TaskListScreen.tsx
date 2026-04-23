@@ -49,57 +49,80 @@ export function TaskListScreen({ state, onComplete, onOpenTask, onAddTask, onEdi
         </div>
       </div>
 
-      {/* Filter chips */}
-      <div style={{ marginTop: 16, padding: '0 16px 4px', display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
-        {cats.map((c) => {
-          const active = filter === c
-          const cat = c !== 'Alle' ? getCatToken(categories, c) : null
-          return (
-            <button key={c} onClick={() => setFilter(c)} style={{
-              flexShrink: 0, border: 'none', cursor: 'pointer',
-              padding: '8px 14px', borderRadius: 999,
-              fontSize: 13, fontWeight: 500,
-              background: active ? (cat ? cat.hue : txt) : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
-              color: active ? '#fff' : (dark ? txt : 'rgba(0,0,0,0.65)'),
-              letterSpacing: -0.1,
-              display: 'flex', alignItems: 'center', gap: 6,
-            }}>
-              {cat && <div style={{ width: 6, height: 6, borderRadius: '50%', background: active ? 'rgba(255,255,255,0.85)' : cat.hue }}/>}
-              {c}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Grouped tasks */}
-      <div style={{ padding: '16px 16px 0' }}>
-        {Object.entries(grouped).map(([catName, catTasks]) => {
-          const cat = getCatToken(categories, catName)
-          const cs = categoryStreak(logs, catName)
-          const streakMember = cs.member ? profiles.find((m) => m.id === cs.member) : null
-
-          return (
-            <div key={catName} style={{ marginBottom: 26 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 4px 10px' }}>
-                <CategoryOrb cat={catName} size={22} categories={categories}/>
-                <div style={{ fontSize: 14, fontWeight: 600, color: txt, letterSpacing: -0.1 }}>{catName}</div>
-                <div style={{ fontSize: 12, color: muted }}>{catTasks.length}</div>
-                {streakMember && cs.coverage > 0.6 && (
-                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: streakMember.color, fontWeight: 600 }}>
-                    <Flame size={10} color={streakMember.color}/>
-                    <span>{streakMember.display_name} · {Math.round(cs.coverage * 100)}%</span>
-                  </div>
-                )}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {catTasks.map((t) => (
-                  <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onOpen={onOpenTask} state={state}/>
-                ))}
-              </div>
+      {tasks.length === 0 ? (
+        <div style={{ margin: '22px 16px 0', borderRadius: 24, background: dark ? 'rgba(50,40,44,0.75)' : 'rgba(255,255,255,0.78)', border: dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '18px 18px 16px' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(42,34,30,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>
+              🧹
             </div>
-          )
-        })}
-      </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: txt, letterSpacing: -0.2, lineHeight: 1.2 }}>Noch keine Aufgaben</div>
+              <div style={{ marginTop: 4, fontSize: 13, color: muted, lineHeight: 1.45 }}>Legt eure ersten Haushaltsaufgaben an und behaltet den Überblick.</div>
+            </div>
+          </div>
+          <div style={{ padding: '0 18px 18px' }}>
+            <button
+              onClick={onAddTask}
+              style={{ width: '100%', padding: '13px', borderRadius: 14, border: 'none', cursor: 'pointer', background: txt, color: dark ? '#2A221E' : '#FDF8F1', fontSize: 14, fontWeight: 600 }}
+            >
+              Aufgabe erstellen
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Filter chips */}
+          <div style={{ marginTop: 16, padding: '0 16px 4px', display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+            {cats.map((c) => {
+              const active = filter === c
+              const cat = c !== 'Alle' ? getCatToken(categories, c) : null
+              return (
+                <button key={c} onClick={() => setFilter(c)} style={{
+                  flexShrink: 0, border: 'none', cursor: 'pointer',
+                  padding: '8px 14px', borderRadius: 999,
+                  fontSize: 13, fontWeight: 500,
+                  background: active ? (cat ? cat.hue : txt) : (dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                  color: active ? '#fff' : (dark ? txt : 'rgba(0,0,0,0.65)'),
+                  letterSpacing: -0.1,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                  {cat && <div style={{ width: 6, height: 6, borderRadius: '50%', background: active ? 'rgba(255,255,255,0.85)' : cat.hue }}/>}
+                  {c}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Grouped tasks */}
+          <div style={{ padding: '16px 16px 0' }}>
+            {Object.entries(grouped).map(([catName, catTasks]) => {
+              const cat = getCatToken(categories, catName)
+              const cs = categoryStreak(logs, catName)
+              const streakMember = cs.member ? profiles.find((m) => m.id === cs.member) : null
+              return (
+                <div key={catName} style={{ marginBottom: 26 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 4px 10px' }}>
+                    <CategoryOrb cat={catName} size={22} categories={categories}/>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: txt, letterSpacing: -0.1 }}>{catName}</div>
+                    <div style={{ fontSize: 12, color: muted }}>{catTasks.length}</div>
+                    {streakMember && cs.coverage > 0.6 && (
+                      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: streakMember.color, fontWeight: 600 }}>
+                        <Flame size={10} color={streakMember.color}/>
+                        <span>{streakMember.display_name} · {Math.round(cs.coverage * 100)}%</span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {catTasks.map((t) => (
+                      <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onOpen={onOpenTask} state={state}/>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
     </div>
   )
 }

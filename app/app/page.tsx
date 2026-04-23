@@ -27,9 +27,8 @@ export default async function AppPage() {
       .from('task_logs')
       .select()
       .eq('household_id', householdId)
-      .gte('completed_at', new Date(Date.now() - 90 * 86400000).toISOString())
       .order('completed_at', { ascending: false })
-      .limit(500),
+      .limit(5000),
     admin.from('categories').select().eq('household_id', householdId).order('name'),
     admin
       .from('kudos')

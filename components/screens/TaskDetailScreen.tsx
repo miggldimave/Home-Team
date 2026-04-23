@@ -21,7 +21,7 @@ interface TaskDetailScreenProps {
   task: Task
   onComplete: (task: Task) => void
   onBack: () => void
-  onKudos: (toMemberId: string, task: Task) => void
+  onKudos: (toMemberId: string, task: Task, reason?: string) => void
   onEdit?: (task: Task) => void
   onDelete?: (taskId: string) => void
 }

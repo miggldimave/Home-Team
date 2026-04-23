@@ -1,15 +1,38 @@
 'use client'
+import { useState, useMemo } from 'react'
 import { CategoryOrb } from '@/components/shared/CategoryOrb'
 import { timeByMember, formatMinutes } from '@/lib/helpers'
 import type { AppState } from '@/lib/types'
 
+type Period = 'week' | 'month' | 'year' | 'all'
+
+const PERIODS: { key: Period; label: string }[] = [
+  { key: 'week', label: 'Woche' },
+  { key: 'month', label: 'Monat' },
+  { key: 'year', label: 'Dieses Jahr' },
+  { key: 'all', label: 'Gesamt' },
+]
+
+const MONTH_NAMES = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+
+function getSince(period: Period): number {
+  if (period === 'week') return Date.now() - 7 * 86400000
+  if (period === 'month') return Date.now() - 30 * 86400000
+  if (period === 'year') {
+    const d = new Date(); d.setMonth(0, 1); d.setHours(0, 0, 0, 0)
+    return d.getTime()
+  }
+  return 0
+}
+
 export function AnalyticsScreen({ state }: { state: AppState }) {
+  const [period, setPeriod] = useState<Period>('month')
   const { logs, profiles, categories, dark } = state
-  const monthAgo = Date.now() - 30 * 86400000
+  const since = getSince(period)
 
   const memberTimes = profiles.map((p) => ({
     profile: p,
-    time: timeByMember(logs, p.id, monthAgo),
+    time: timeByMember(logs, p.id, since),
   }))
   const total = memberTimes.reduce((s, m) => s + m.time, 0) || 1
 
@@ -18,35 +41,98 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
     byCat[c.name] = {}
     profiles.forEach((p) => { byCat[c.name][p.id] = 0 })
   })
-  logs.filter((l) => l.ts >= monthAgo).forEach((l) => {
+  logs.filter((l) => l.ts >= since).forEach((l) => {
     if (byCat[l.cat]) byCat[l.cat][l.memberId] = (byCat[l.cat][l.memberId] || 0) + l.time
   })
 
-  const days: { ds: number; byMember: Record<string, number> }[] = []
-  for (let d = 13; d >= 0; d--) {
-    const start = Date.now() - d * 86400000
-    const s = new Date(start); s.setHours(0, 0, 0, 0)
-    const ds = s.getTime(); const de = ds + 86400000
-    const byMember: Record<string, number> = {}
-    profiles.forEach((p) => {
-      byMember[p.id] = logs.filter((l) => l.memberId === p.id && l.ts >= ds && l.ts < de).reduce((a, l) => a + l.time, 0)
+  const chartBars = useMemo(() => {
+    if (period === 'week' || period === 'month') {
+      const count = period === 'week' ? 7 : 14
+      return Array.from({ length: count }, (_, i) => {
+        const d = count - 1 - i
+        const s = new Date(Date.now() - d * 86400000); s.setHours(0, 0, 0, 0)
+        const ds = s.getTime(); const de = ds + 86400000
+        const byMember: Record<string, number> = {}
+        profiles.forEach((p) => {
+          byMember[p.id] = logs
+            .filter((l) => l.memberId === p.id && l.ts >= ds && l.ts < de)
+            .reduce((a, l) => a + l.time, 0)
+        })
+        return { label: '', byMember }
+      })
+    }
+    const now = new Date()
+    const barCount = period === 'year' ? now.getMonth() + 1 : 12
+    return Array.from({ length: barCount }, (_, i) => {
+      let year: number, month: number
+      if (period === 'year') {
+        year = now.getFullYear(); month = i
+      } else {
+        const d = new Date(now.getFullYear(), now.getMonth() - (barCount - 1 - i), 1)
+        year = d.getFullYear(); month = d.getMonth()
+      }
+      const start = new Date(year, month, 1).getTime()
+      const end = new Date(year, month + 1, 1).getTime()
+      const byMember: Record<string, number> = {}
+      profiles.forEach((p) => {
+        byMember[p.id] = logs
+          .filter((l) => l.memberId === p.id && l.ts >= start && l.ts < end)
+          .reduce((a, l) => a + l.time, 0)
+      })
+      return { label: MONTH_NAMES[month], byMember }
     })
-    days.push({ ds, byMember })
-  }
-  const maxDay = Math.max(...days.map((d) => Object.values(d.byMember).reduce((a, v) => a + v, 0)), 1)
+  }, [period, logs, profiles])
+
+  const maxBar = Math.max(...chartBars.map((b) => Object.values(b.byMember).reduce((a, v) => a + v, 0)), 1)
+  const isMonthly = period === 'year' || period === 'all'
+
+  const periodHeaderLabel = period === 'week' ? '7 Tage'
+    : period === 'month' ? '30 Tage'
+    : period === 'year' ? String(new Date().getFullYear())
+    : 'Gesamt'
+
+  const chartTitle = period === 'week' ? 'Letzte 7 Tage · gemeinsam'
+    : period === 'month' ? 'Letzte 14 Tage · gemeinsam'
+    : period === 'year' ? `${new Date().getFullYear()} · monatlich`
+    : 'Letzte 12 Monate · monatlich'
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
   const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)'
   const cardBg = dark ? 'rgba(50,40,44,0.75)' : 'rgba(255,255,255,0.78)'
   const cardBorder = dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.04)'
-
-  const [p1, p2] = profiles
+  const toggleBg = dark ? 'rgba(50,40,44,0.75)' : 'rgba(0,0,0,0.05)'
+  const activeBg = dark ? 'rgba(80,60,55,0.95)' : 'rgba(255,255,255,0.95)'
 
   return (
     <div style={{ paddingBottom: 140 }}>
       <div style={{ padding: '60px 24px 0' }}>
-        <div style={{ fontSize: 12, fontWeight: 500, color: muted, letterSpacing: 0.5, textTransform: 'uppercase' }}>Transparenz · 30 Tage</div>
+        <div style={{ fontSize: 12, fontWeight: 500, color: muted, letterSpacing: 0.5, textTransform: 'uppercase' }}>Transparenz · {periodHeaderLabel}</div>
         <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 40, lineHeight: 1.05, letterSpacing: -0.5, color: txt, marginTop: 4 }}>Balance</div>
+      </div>
+
+      {/* Period toggle */}
+      <div style={{ margin: '20px 16px 0', display: 'flex', background: toggleBg, borderRadius: 14, padding: 3, gap: 2 }}>
+        {PERIODS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setPeriod(key)}
+            style={{
+              flex: 1,
+              padding: '8px 4px',
+              borderRadius: 11,
+              border: 'none',
+              background: period === key ? activeBg : 'transparent',
+              color: period === key ? txt : muted,
+              fontSize: 12,
+              fontWeight: period === key ? 600 : 500,
+              cursor: 'pointer',
+              transition: 'background 0.2s, color 0.2s',
+              boxShadow: period === key ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+            }}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Balance bar */}
@@ -108,14 +194,14 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
         })}
       </div>
 
-      {/* 14-day trend */}
+      {/* Trend chart */}
       <div style={{ margin: '22px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Letzte 14 Tage · gemeinsam</div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 90 }}>
-          {days.map((d, i) => (
+        <div style={{ fontSize: 12, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>{chartTitle}</div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: isMonthly ? 4 : 3, height: 90 }}>
+          {chartBars.map((bar, i) => (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'flex-end' }}>
               {[...profiles].reverse().map((p) => {
-                const raw = ((d.byMember[p.id] || 0) / maxDay) * 90
+                const raw = ((bar.byMember[p.id] || 0) / maxBar) * 90
                 const h = raw > 0 ? Math.max(2, Math.round(raw)) : 0
                 return (
                   <div key={p.id} style={{ height: h, background: p.color, borderRadius: '3px 3px 0 0', flexShrink: 0 }}/>
@@ -124,9 +210,17 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
             </div>
           ))}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 10, color: muted }}>
-          <span>vor 14T</span><span>heute</span>
-        </div>
+        {isMonthly ? (
+          <div style={{ display: 'flex', marginTop: 8 }}>
+            {chartBars.map((bar, i) => (
+              <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, color: muted, overflow: 'hidden' }}>{bar.label}</div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 10, color: muted }}>
+            <span>{period === 'week' ? 'vor 7T' : 'vor 14T'}</span><span>heute</span>
+          </div>
+        )}
       </div>
     </div>
   )

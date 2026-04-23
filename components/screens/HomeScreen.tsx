@@ -14,19 +14,21 @@ import {
   taskStreak,
   entlastungCandidates,
 } from '@/lib/helpers'
+import { InvitePrompt } from '@/components/shared/InvitePrompt'
 import type { AppState, ComputedTaskLog, Task } from '@/lib/types'
 
 interface HomeScreenProps {
   state: AppState
   onComplete: (task: Task) => void
   onNavigate: (screen: string) => void
-  onKudos: (toMemberId: string, task: Task) => void
+  onKudos: (toMemberId: string, task: Task, reason?: string) => void
   onOpenTask: (task: Task) => void
+  onAddTask: () => void
   kudosDismissedAt: number
   onDismissKudos: () => void
 }
 
-export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask, kudosDismissedAt, onDismissKudos }: HomeScreenProps) {
+export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask, onAddTask, kudosDismissedAt, onDismissKudos }: HomeScreenProps) {
   const router = useRouter()
   const { logs, tasks, profiles, currentProfile, categories, kudos, dark } = state
   const me = currentProfile
@@ -88,18 +90,26 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
   }
   const visibleFeed = recentByOther.filter((l) => !dismissedFeedIds.has(l.id))
 
-  // Group incoming kudos by sender
-  const kudosBySender: Record<string, { name: string; color: string; taskNames: string[] }> = {}
+  // Group incoming kudos by sender with reason-based labels
+  const kudosBySender: Record<string, { name: string; color: string; entries: string[] }> = {}
   incomingKudos.forEach((k) => {
-      const sender = profiles.find((p) => p.id === k.from_profile_id)
-      if (!sender) return
-      if (!kudosBySender[k.from_profile_id]) {
-        kudosBySender[k.from_profile_id] = { name: sender.display_name, color: sender.color, taskNames: [] }
-      }
-      const task = tasks.find((t) => t.id === k.task_id)
-      if (task && !kudosBySender[k.from_profile_id].taskNames.includes(task.name)) {
-        kudosBySender[k.from_profile_id].taskNames.push(task.name)
-      }
+    const sender = profiles.find((p) => p.id === k.from_profile_id)
+    if (!sender) return
+    if (!kudosBySender[k.from_profile_id]) {
+      kudosBySender[k.from_profile_id] = { name: sender.display_name, color: sender.color, entries: [] }
+    }
+    const task = tasks.find((t) => t.id === k.task_id)
+    let label = ''
+    if (k.reason === 'streak' && task) {
+      label = `den Streak bei ${task.name}`
+    } else if (k.reason === 'category' && task) {
+      label = `das Rocken von ${task.category}`
+    } else if (task) {
+      label = task.name
+    }
+    if (label && !kudosBySender[k.from_profile_id].entries.includes(label)) {
+      kudosBySender[k.from_profile_id].entries.push(label)
+    }
   })
   const kudosSenders = Object.values(kudosBySender)
 
@@ -130,7 +140,12 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
         </div>
       </div>
 
+      {profiles.length < 2 && (
+        <InvitePrompt inviteCode={state.household.invite_code} dark={dark}/>
+      )}
+
       {/* Team quota card */}
+      {tasks.length > 0 &&
       <div style={{ margin: '22px 16px 0', padding: '18px 20px', borderRadius: 24, background: cardBg, border: cardBorder, backdropFilter: 'blur(12px)' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Team diesen Monat</div>
@@ -155,7 +170,7 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18, lineHeight: 1.3, color: txt, letterSpacing: -0.2 }}>
           Ihr habt zusammen schon <em>{formatMinutes(quota.done)}</em> investiert.
         </div>
-      </div>
+      </div>}
 
       {/* Entlastungs-Karte */}
       {entlastung && other && (
@@ -178,7 +193,7 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
               <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18, color: txt, letterSpacing: -0.2, lineHeight: 1.3 }}>
                 {other.display_name} hat <em>{entlastung.name}</em> die letzten {entlastung.streak.count} Mal gemacht.
               </div>
-              <div style={{ marginTop: 6, fontSize: 13, color: muted }}>Magst du heute dran?</div>
+              <div style={{ marginTop: 6, fontSize: 13, color: muted }}>Magst du als nächstes?</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
@@ -202,10 +217,10 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
               <div key={i} style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 17, color: txt, letterSpacing: -0.2, lineHeight: 1.35 }}>
                 <em style={{ color: s.color }}>{s.name}</em>
                 {' hat dir gedankt'}
-                {s.taskNames.length > 0 && (
+                {s.entries.length > 0 && (
                   <span style={{ color: muted, fontSize: 14, fontFamily: 'inherit' }}>
                     {' für '}
-                    <em>{s.taskNames.slice(0, 2).join(', ')}{s.taskNames.length > 2 ? ` +${s.taskNames.length - 2}` : ''}</em>
+                    <em>{s.entries.slice(0, 2).join(', ')}{s.entries.length > 2 ? ` +${s.entries.length - 2}` : ''}</em>
                   </span>
                 )}
               </div>
@@ -220,22 +235,45 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
         </div>
       )}
 
-      {/* Heute dran */}
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '24px 24px 12px' }}>
-        <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, lineHeight: 1.1, color: txt, letterSpacing: -0.2 }}>Heute dran</div>
-        <button onClick={() => onNavigate('list')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: muted }}>alle ansehen</button>
-      </div>
-
-      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {due.map((t) => (
-          <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onOpen={onOpenTask} state={state}/>
-        ))}
-        {due.length === 0 && (
-          <div style={{ padding: '32px 20px', textAlign: 'center', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 20, color: muted, fontStyle: 'italic' }}>
-            alles erledigt — Zeit für Kaffee.
+      {tasks.length === 0 ? (
+        <div style={{ margin: '22px 16px 0', borderRadius: 24, background: cardBg, border: cardBorder, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '18px 18px 16px' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(42,34,30,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>
+              🧹
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: txt, letterSpacing: -0.2, lineHeight: 1.2 }}>Noch keine Aufgaben</div>
+              <div style={{ marginTop: 4, fontSize: 13, color: muted, lineHeight: 1.45 }}>Legt eure ersten Haushaltsaufgaben an und behaltet den Überblick.</div>
+            </div>
           </div>
-        )}
-      </div>
+          <div style={{ padding: '0 18px 18px' }}>
+            <button
+              onClick={onAddTask}
+              style={{ width: '100%', padding: '13px', borderRadius: 14, border: 'none', cursor: 'pointer', background: txt, color: dark ? '#2A221E' : '#FDF8F1', fontSize: 14, fontWeight: 600 }}
+            >
+              Aufgabe erstellen
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Heute dran */}
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '24px 24px 12px' }}>
+            <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 22, lineHeight: 1.1, color: txt, letterSpacing: -0.2 }}>Heute dran</div>
+            <button onClick={() => onNavigate('list')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: muted }}>alle ansehen</button>
+          </div>
+          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {due.map((t) => (
+              <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onOpen={onOpenTask} state={state}/>
+            ))}
+            {due.length === 0 && (
+              <div style={{ padding: '32px 20px', textAlign: 'center', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 20, color: muted, fontStyle: 'italic' }}>
+                alles erledigt — Zeit für Kaffee.
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Was Person gemacht hat (dismissable) */}
       {visibleFeed.length > 0 && other && (
@@ -295,7 +333,7 @@ export function TaskRow({ task, dark, onComplete, onOpen, state, hideFlame = fal
 
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
   const done = state.logs.some(
-    (l) => l.taskId === task.id && l.memberId === state.currentProfile.id && l.ts >= todayStart.getTime()
+    (l) => l.taskId === task.id && l.ts >= todayStart.getTime()
   )
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
