@@ -114,13 +114,6 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleCopyLink = () => {
-    const url = `${window.location.origin}/join/${household.invite_code}`
-    navigator.clipboard.writeText(url)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
     <div style={{ minHeight: '100vh', background: bg, padding: '0 0 60px' }}>
       {/* Header */}
@@ -296,13 +289,6 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
             </button>
           </div>
         </div>
-
-        <button
-          onClick={handleCopyLink}
-          style={{ width: '100%', padding: '12px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', background: 'transparent', color: txt, fontSize: 14, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-        >
-          {Icons.plus(16, txt)} Einladungslink kopieren
-        </button>
       </div>
 
       {/* Sign out */}

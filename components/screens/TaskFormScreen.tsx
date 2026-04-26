@@ -22,7 +22,11 @@ export function TaskFormScreen({ categories: initialCategories, scoringMode, edi
   const [icon, setIcon] = useState(editTask?.icon ?? AVAILABLE_ICONS[0])
   const [pts, setPts] = useState(String(editTask?.pts ?? 5))
   const [timeMinutes, setTimeMinutes] = useState(String(editTask?.time_minutes ?? 15))
-  const [cycleDays, setCycleDays] = useState(String(editTask?.cycle_days ?? 7))
+  const initCycleDays = editTask?.cycle_days ?? 7
+  const initUnit = initCycleDays % 30 === 0 ? 'months' : initCycleDays % 7 === 0 ? 'weeks' : 'days'
+  const initValue = initUnit === 'months' ? initCycleDays / 30 : initUnit === 'weeks' ? initCycleDays / 7 : initCycleDays
+  const [cycleValue, setCycleValue] = useState(String(initValue))
+  const [cycleUnit, setCycleUnit] = useState<'days' | 'weeks' | 'months'>(initUnit)
   const [error, setError] = useState('')
   const [showCatManage, setShowCatManage] = useState(false)
   const [showCatModal, setShowCatModal] = useState(false)
@@ -47,7 +51,8 @@ export function TaskFormScreen({ categories: initialCategories, scoringMode, edi
     fd.append('icon', icon)
     fd.append('pts', pts)
     fd.append('time_minutes', timeMinutes)
-    fd.append('cycle_days', cycleDays)
+    const multiplier = cycleUnit === 'months' ? 30 : cycleUnit === 'weeks' ? 7 : 1
+    fd.append('cycle_days', String(Math.max(1, Math.round(Number(cycleValue) * multiplier))))
     startTransition(async () => {
       const res = editTask ? await updateTask(editTask.id, fd) : await createTask(fd)
       if (res?.error) { setError(res.error); return }
@@ -154,14 +159,40 @@ export function TaskFormScreen({ categories: initialCategories, scoringMode, edi
       <div style={{ margin: '10px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
         <div style={{ fontSize: 12, fontWeight: 500, color: muted, marginBottom: 14 }}>Details</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <label>
+          <label style={{ gridColumn: '1 / -1' }}>
             <div style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Zeit (Min.)</div>
             <input type="number" min="1" value={timeMinutes} onChange={(e) => setTimeMinutes(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt, outline: 'none', boxSizing: 'border-box' }}/>
           </label>
-          <label>
-            <div style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Alle X Tage</div>
-            <input type="number" min="1" value={cycleDays} onChange={(e) => setCycleDays(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt, outline: 'none', boxSizing: 'border-box' }}/>
-          </label>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <div style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Wiederholung</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input
+                type="number" min="1" inputMode="numeric"
+                value={cycleValue}
+                onChange={(e) => setCycleValue(e.target.value)}
+                style={{ width: 64, padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt, outline: 'none', boxSizing: 'border-box', textAlign: 'center' }}
+              />
+              {(['days', 'weeks', 'months'] as const).map((u) => {
+                const labels = { days: 'Tage', weeks: 'Wochen', months: 'Monate' }
+                const active = cycleUnit === u
+                return (
+                  <button
+                    key={u} type="button"
+                    onClick={() => setCycleUnit(u)}
+                    style={{
+                      flex: 1, padding: '10px 0', borderRadius: 12, border: active ? 'none' : '1px solid rgba(0,0,0,0.08)',
+                      background: active ? txt : 'rgba(0,0,0,0.02)',
+                      color: active ? '#FDF8F1' : muted,
+                      fontSize: 13, fontWeight: active ? 600 : 400,
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}
+                  >
+                    {labels[u]}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
           {scoringMode === 'punkte' && (
             <label style={{ gridColumn: '1 / -1' }}>
               <div style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Punkte</div>
