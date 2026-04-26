@@ -1,12 +1,12 @@
 'use client'
 import { useState, useTransition } from 'react'
-import { MEMBER_COLOR_OPTIONS, TASK_SUGGESTIONS, DEFAULT_CATEGORIES } from '@/lib/tokens'
+import { MEMBER_COLOR_OPTIONS, TASK_SUGGESTIONS, SUGGESTION_CATEGORY_COLORS } from '@/lib/tokens'
 import { createHouseholdWithTasks, joinHousehold } from './actions'
 
 type Mode = 'choose' | 'create' | 'join' | 'tasks'
 
 const catColor = (cat: string) =>
-  DEFAULT_CATEGORIES.find((c) => c.name === cat)?.hue ?? 'rgb(168,146,196)'
+  SUGGESTION_CATEGORY_COLORS[cat]?.hue ?? 'rgb(168,146,196)'
 
 export default function OnboardingPage() {
   const [mode, setMode] = useState<Mode>('choose')

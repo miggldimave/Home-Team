@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { createAdminClient } from '@/lib/supabase-admin'
-import { TASK_SUGGESTIONS, DEFAULT_CATEGORIES } from '@/lib/tokens'
+import { TASK_SUGGESTIONS, SUGGESTION_CATEGORY_COLORS } from '@/lib/tokens'
 
 export async function createHouseholdWithTasks(formData: FormData, selectedTaskNames: string[]) {
   const supabase = await createClient()
@@ -26,15 +26,21 @@ export async function createHouseholdWithTasks(formData: FormData, selectedTaskN
     return { error: hhError?.message ?? 'Fehler beim Erstellen.' }
   }
 
-  await admin.from('categories').insert(
-    DEFAULT_CATEGORIES.map((c) => ({ ...c, household_id: household.id }))
-  )
-
   if (selectedTaskNames.length > 0) {
-    const tasks = TASK_SUGGESTIONS
-      .filter((t) => selectedTaskNames.includes(t.name))
-      .map((t) => ({ ...t, household_id: household.id }))
-    await admin.from('tasks').insert(tasks)
+    const selectedTasks = TASK_SUGGESTIONS.filter((t) => selectedTaskNames.includes(t.name))
+
+    const uniqueCategories = [...new Set(selectedTasks.map((t) => t.category))]
+    await admin.from('categories').insert(
+      uniqueCategories.map((name) => ({
+        name,
+        household_id: household.id,
+        ...(SUGGESTION_CATEGORY_COLORS[name] ?? { hue: 'rgb(168,146,196)', soft: 'rgb(238,230,246)', deep: 'rgb(78,58,106)' }),
+      }))
+    )
+
+    await admin.from('tasks').insert(
+      selectedTasks.map((t) => ({ ...t, household_id: household.id }))
+    )
   }
 
   const { error: profileError } = await admin.from('profiles').upsert({
