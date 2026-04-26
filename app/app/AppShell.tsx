@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { WarmBackdrop } from '@/components/shared/WarmBackdrop'
+import { PullToRefresh } from '@/components/shared/PullToRefresh'
 import { TabBar } from '@/components/shared/TabBar'
 import { Petals } from '@/components/shared/Petals'
 import { Hearts } from '@/components/shared/Hearts'
@@ -188,9 +189,9 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
       <div style={{ width: '100%', maxWidth: 430, minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
         <WarmBackdrop dark={dark}>
           <div style={{ height: '100dvh', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
+            <PullToRefresh>
               {renderScreen()}
-            </div>
+            </PullToRefresh>
             {showTabBar && (
               <TabBar activeTab={screen} onNavigate={(tab) => setScreen(tab)} dark={dark}/>
             )}
