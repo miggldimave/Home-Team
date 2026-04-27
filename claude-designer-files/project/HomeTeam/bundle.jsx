@@ -928,7 +928,7 @@ function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask, curren
               <div style={{
                 marginTop: 6, fontFamily: 'Geist, system-ui', fontSize: 13,
                 color: muted,
-              }}>Magst du heute dran?</div>
+              }}>Magst du als nächstes?</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
