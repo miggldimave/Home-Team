@@ -36,22 +36,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
           rel="stylesheet"
         />
+        {/* iOS PWA startup images — one per physical resolution */}
+        <link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="/api/splash?w=750&h=1334" />
+        <link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="/api/splash?w=1125&h=2436" />
+        <link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="/api/splash?w=1170&h=2532" />
+        <link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="/api/splash?w=1179&h=2556" />
+        <link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="/api/splash?w=828&h=1792" />
+        <link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="/api/splash?w=1242&h=2688" />
+        <link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="/api/splash?w=1284&h=2778" />
+        <link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="/api/splash?w=1290&h=2796" />
       </head>
       <body style={{ fontFamily: 'var(--font-geist), system-ui, sans-serif', background: '#FDF8F1' }}>
-        <div id="app-splash">
-          <img src="/icons/icon-512.png" width="108" height="108" alt="" />
-        </div>
-        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
-        <script dangerouslySetInnerHTML={{ __html: `
-          window.addEventListener('load', function() {
-            var s = document.getElementById('app-splash');
-            if (!s) return;
-            setTimeout(function() {
-              s.classList.add('app-splash--out');
-              setTimeout(function() { s.style.display = 'none'; }, 450);
-            }, 150);
-          });
-        `}} />
         <DeploymentGuard id={process.env.VERCEL_DEPLOYMENT_ID ?? 'dev'} />
         {children}
       </body>

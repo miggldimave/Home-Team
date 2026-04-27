@@ -4,25 +4,6 @@
   box-sizing: border-box;
 }
 
-#app-splash {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #FDF8F1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.45s ease;
-}
-
-#app-splash img {
-  border-radius: 24px;
-}
-
-#app-splash.app-splash--out {
-  opacity: 0;
-}
-
 html,
 body {
   margin: 0;
