@@ -37,7 +37,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body style={{ fontFamily: 'var(--font-geist), system-ui, sans-serif' }}>
+      <body style={{ fontFamily: 'var(--font-geist), system-ui, sans-serif', background: '#FDF8F1' }}>
+        <div id="app-splash">
+          <img src="/icons/icon-512.png" width="108" height="108" alt="" />
+        </div>
+        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.addEventListener('load', function() {
+            var s = document.getElementById('app-splash');
+            if (!s) return;
+            setTimeout(function() {
+              s.classList.add('app-splash--out');
+              setTimeout(function() { s.style.display = 'none'; }, 450);
+            }, 150);
+          });
+        `}} />
         <DeploymentGuard id={process.env.VERCEL_DEPLOYMENT_ID ?? 'dev'} />
         {children}
       </body>
