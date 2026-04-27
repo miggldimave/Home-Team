@@ -35,7 +35,7 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
   const other = profiles.find((p) => p.id !== me.id)
 
   const qPeriod = state.household.quota_period ?? 'monthly'
-  const qGoal = state.household.quota_goal ?? 80
+  const qGoal = state.household.quota_goal ?? 100
   const quota = periodQuota(logs, tasks, qPeriod, qGoal)
   const myTime = timeByMember(logs, me.id, quota.since)
   const otherTime = other ? timeByMember(logs, other.id, quota.since) : 0

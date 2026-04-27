@@ -18,7 +18,7 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
   const [householdName, setHouseholdName] = useState(household.name)
   const [scoringMode, setScoringMode] = useState<ScoringMode>(household.scoring_mode)
   const [quotaPeriod, setQuotaPeriod] = useState<QuotaPeriod>(household.quota_period ?? 'monthly')
-  const [quotaGoal, setQuotaGoal] = useState<number>(household.quota_goal ?? 80)
+  const [quotaGoal, setQuotaGoal] = useState<number>(household.quota_goal ?? 100)
   const [copied, setCopied] = useState(false)
   const [profileMsg, setProfileMsg] = useState('')
   const [householdMsg, setHouseholdMsg] = useState('')
