@@ -1,11 +1,15 @@
 export type ScoringMode = 'punkte' | 'zeit'
 
+export type QuotaPeriod = 'weekly' | 'biweekly' | 'monthly'
+
 export interface Household {
   id: string
   name: string
   scoring_mode: ScoringMode
   invite_code: string
   created_at: string
+  quota_period: QuotaPeriod
+  quota_goal: number
 }
 
 export interface Profile {

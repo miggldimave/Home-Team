@@ -33,8 +33,13 @@ export async function updateHousehold(formData: FormData) {
   const name = formData.get('name') as string
   const householdId = formData.get('householdId') as string
   const scoringMode = formData.get('scoring_mode') as string
+  const quotaPeriod = formData.get('quota_period') as string
+  const quotaGoal = parseInt(formData.get('quota_goal') as string, 10)
 
-  const { error } = await admin.from('households').update({ name, scoring_mode: scoringMode }).eq('id', householdId)
+  const { error } = await admin
+    .from('households')
+    .update({ name, scoring_mode: scoringMode, quota_period: quotaPeriod, quota_goal: quotaGoal })
+    .eq('id', householdId)
   if (error) return { error: error.message }
   return { success: true }
 }

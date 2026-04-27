@@ -6,7 +6,7 @@ import { TaskIconTile } from '@/components/shared/TaskIconTile'
 import { Flame, Heart, Icons } from '@/components/shared/Icons'
 import { getCatToken } from '@/lib/tokens'
 import {
-  monthlyQuota,
+  periodQuota,
   timeByMember,
   formatMinutes,
   timeAgo,
@@ -34,10 +34,11 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
 
-  const quota = monthlyQuota(logs, tasks)
-  const monthAgo = Date.now() - 30 * 86400000
-  const myTime = timeByMember(logs, me.id, monthAgo)
-  const otherTime = other ? timeByMember(logs, other.id, monthAgo) : 0
+  const qPeriod = state.household.quota_period ?? 'monthly'
+  const qGoal = state.household.quota_goal ?? 80
+  const quota = periodQuota(logs, tasks, qPeriod, qGoal)
+  const myTime = timeByMember(logs, me.id, quota.since)
+  const otherTime = other ? timeByMember(logs, other.id, quota.since) : 0
   const totalTime = myTime + otherTime || 1
 
   const lastDone = lastDoneByTask(logs)
@@ -148,7 +149,9 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
       {tasks.length > 0 &&
       <div style={{ margin: '22px 16px 0', padding: '18px 20px', borderRadius: 24, background: cardBg, border: cardBorder, backdropFilter: 'blur(12px)' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Team diesen Monat</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            {qPeriod === 'weekly' ? 'Team diese Woche' : qPeriod === 'biweekly' ? 'Team diese 2 Wochen' : 'Team diesen Monat'}
+          </div>
           <div style={{ fontSize: 12, color: muted, fontWeight: 500 }}>{Math.round(quota.pct * 100)}%</div>
         </div>
         <div style={{ height: 10, borderRadius: 5, overflow: 'hidden', display: 'flex', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }}>
@@ -168,7 +171,11 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
           )}
         </div>
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18, lineHeight: 1.3, color: txt, letterSpacing: -0.2 }}>
-          Ihr habt zusammen schon <em>{formatMinutes(quota.done)}</em> investiert.
+          {qPeriod === 'weekly'
+            ? <>Diese Woche schon <em>{formatMinutes(quota.done)}</em> investiert.</>
+            : qPeriod === 'biweekly'
+            ? <>In 2 Wochen zusammen <em>{formatMinutes(quota.done)}</em> investiert.</>
+            : <>Diesen Monat schon <em>{formatMinutes(quota.done)}</em> investiert.</>}
         </div>
       </div>}
 

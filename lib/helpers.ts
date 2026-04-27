@@ -1,4 +1,4 @@
-import type { ComputedTaskLog, Task } from './types'
+import type { ComputedTaskLog, Task, QuotaPeriod } from './types'
 
 export function lastDoneByTask(logs: ComputedTaskLog[]): Record<string, ComputedTaskLog> {
   const m: Record<string, ComputedTaskLog> = {}
@@ -42,11 +42,45 @@ export function categoryStreak(
   return { member: who, count: c, coverage, days }
 }
 
+function periodStartTs(period: QuotaPeriod): number {
+  const now = new Date()
+  if (period === 'weekly') {
+    const daysSinceMon = (now.getDay() + 6) % 7
+    const mon = new Date(now)
+    mon.setHours(0, 0, 0, 0)
+    mon.setDate(mon.getDate() - daysSinceMon)
+    return mon.getTime()
+  }
+  if (period === 'biweekly') {
+    return Date.now() - 14 * 86400000
+  }
+  return new Date(now.getFullYear(), now.getMonth(), 1).getTime()
+}
+
+function periodLengthDays(period: QuotaPeriod): number {
+  if (period === 'weekly') return 7
+  if (period === 'biweekly') return 14
+  const now = new Date()
+  return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+}
+
+export function periodQuota(
+  logs: ComputedTaskLog[],
+  tasks: Task[],
+  period: QuotaPeriod = 'monthly',
+  goal = 80,
+): { done: number; expected: number; pct: number; since: number } {
+  const days = periodLengthDays(period)
+  const expected = tasks.reduce((s, t) => s + t.time_minutes * (days / t.cycle_days), 0)
+  const since = periodStartTs(period)
+  const done = logs.filter((l) => l.ts >= since).reduce((s, l) => s + l.time, 0)
+  const target = expected * (goal / 100)
+  return { done, expected: Math.round(expected), pct: Math.min(1, target > 0 ? done / target : 0), since }
+}
+
 export function monthlyQuota(logs: ComputedTaskLog[], tasks: Task[]): { done: number; expected: number; pct: number } {
-  const expected = tasks.reduce((s, t) => s + t.time_minutes * (30 / t.cycle_days), 0)
-  const monthAgo = Date.now() - 30 * 86400000
-  const done = logs.filter((l) => l.ts >= monthAgo).reduce((s, l) => s + l.time, 0)
-  return { done, expected: Math.round(expected), pct: Math.min(1, done / expected) }
+  const { done, expected, pct } = periodQuota(logs, tasks, 'monthly', 100)
+  return { done, expected, pct }
 }
 
 export function timeByMember(logs: ComputedTaskLog[], uid: string, since: number): number {

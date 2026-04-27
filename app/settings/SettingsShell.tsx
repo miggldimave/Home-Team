@@ -5,7 +5,7 @@ import { Avatar } from '@/components/shared/Avatar'
 import { Icons } from '@/components/shared/Icons'
 import { MEMBER_COLOR_OPTIONS } from '@/lib/tokens'
 import { updateProfile, updateHousehold, changePassword, uploadAvatar, signOut } from './actions'
-import type { Profile, Household, ScoringMode } from '@/lib/types'
+import type { Profile, Household, ScoringMode, QuotaPeriod } from '@/lib/types'
 
 export function SettingsShell({ profile, household }: { profile: Profile; household: Household }) {
   const router = useRouter()
@@ -17,6 +17,8 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
   )
   const [householdName, setHouseholdName] = useState(household.name)
   const [scoringMode, setScoringMode] = useState<ScoringMode>(household.scoring_mode)
+  const [quotaPeriod, setQuotaPeriod] = useState<QuotaPeriod>(household.quota_period ?? 'monthly')
+  const [quotaGoal, setQuotaGoal] = useState<number>(household.quota_goal ?? 80)
   const [copied, setCopied] = useState(false)
   const [profileMsg, setProfileMsg] = useState('')
   const [householdMsg, setHouseholdMsg] = useState('')
@@ -79,6 +81,8 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
       fd.append('name', householdName || household.name)
       fd.append('householdId', household.id)
       fd.append('scoring_mode', scoringMode)
+      fd.append('quota_period', quotaPeriod)
+      fd.append('quota_goal', String(quotaGoal))
       const res = await updateHousehold(fd)
       if (res?.error) { setHouseholdMsg('Fehler: ' + res.error) }
       else { setHouseholdMsg('Gespeichert.'); setTimeout(() => setHouseholdMsg(''), 2000); router.refresh() }
@@ -213,6 +217,66 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
             ))}
           </div>
           <div style={{ fontSize: 11, color: muted, marginTop: 6 }}>Achtung: betrifft den gesamten Haushalt.</div>
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: muted, marginBottom: 8 }}>Zeitraum Team-Fortschritt</div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {([
+              { value: 'weekly', label: 'Wöchentlich' },
+              { value: 'biweekly', label: '2-Wöchentlich' },
+              { value: 'monthly', label: 'Monatlich' },
+            ] as { value: QuotaPeriod; label: string }[]).map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setQuotaPeriod(value)}
+                style={{
+                  flex: 1, padding: '10px 6px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                  fontSize: 13, fontWeight: 600, lineHeight: 1.2, transition: 'all 0.15s',
+                  background: quotaPeriod === value ? txt : 'rgba(0,0,0,0.04)',
+                  color: quotaPeriod === value ? '#FDF8F1' : muted,
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 500, color: muted }}>Haushaltsziel</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: txt, letterSpacing: -0.5 }}>{quotaGoal}%</div>
+          </div>
+          <input
+            type="range"
+            min={50}
+            max={100}
+            step={10}
+            value={quotaGoal}
+            onChange={(e) => setQuotaGoal(Number(e.target.value))}
+            className="quota-slider"
+            style={{ width: '100%', display: 'block' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+            {[50, 60, 70, 80, 90, 100].map((v) => (
+              <button
+                key={v}
+                onClick={() => setQuotaGoal(v)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 11, fontWeight: quotaGoal === v ? 700 : 400,
+                  color: quotaGoal === v ? txt : muted,
+                  padding: '4px 0', minWidth: 28, textAlign: 'center',
+                }}
+              >
+                {v}%
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>
+            Wenn {quotaGoal}% der Aufgabenzeit erledigt sind, zeigt der Balken 100%.
+          </div>
         </div>
 
         <button
