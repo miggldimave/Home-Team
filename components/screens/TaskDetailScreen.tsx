@@ -21,13 +21,14 @@ interface TaskDetailScreenProps {
   task: Task
   onComplete: (task: Task) => void
   onUndo?: (task: Task) => void
+  onDeleteLog?: (logId: string) => void
   onBack: () => void
   onKudos: (toMemberId: string, task: Task, reason?: string) => void
   onEdit?: (task: Task) => void
   onDelete?: (taskId: string) => void
 }
 
-export function TaskDetailScreen({ state, task, onComplete, onUndo, onBack, onKudos, onEdit, onDelete }: TaskDetailScreenProps) {
+export function TaskDetailScreen({ state, task, onComplete, onUndo, onDeleteLog, onBack, onKudos, onEdit, onDelete }: TaskDetailScreenProps) {
   const { logs, profiles, currentProfile, categories, dark } = state
   const me = currentProfile
   const cat = getCatToken(categories, task.category)
@@ -35,9 +36,8 @@ export function TaskDetailScreen({ state, task, onComplete, onUndo, onBack, onKu
   const streakMember = streak.member ? profiles.find((m) => m.id === streak.member) : null
   const history = logs.filter((l) => l.taskId === task.id).slice(0, 10)
 
-  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
-
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmDeleteLog, setConfirmDeleteLog] = useState<string | null>(null)
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
   const muted = dark ? 'rgba(242,236,228,0.55)' : 'rgba(42,34,30,0.55)'
@@ -125,7 +125,7 @@ export function TaskDetailScreen({ state, task, onComplete, onUndo, onBack, onKu
             {history.map((l, i) => {
               const m = profiles.find((mm) => mm.id === l.memberId)
               if (!m) return null
-              const canUndo = onUndo && l.memberId === me.id && l.ts >= todayStart.getTime()
+              const canDelete = onDeleteLog && l.memberId === me.id
               return (
                 <div key={i} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, borderTop: i > 0 ? (dark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)') : 'none' }}>
                   <Avatar member={m} size={32}/>
@@ -134,12 +134,12 @@ export function TaskDetailScreen({ state, task, onComplete, onUndo, onBack, onKu
                     <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)}</div>
                   </div>
                   <div style={{ fontSize: 12, color: muted }}>{formatMinutes(l.time)}</div>
-                  {canUndo && (
+                  {canDelete && (
                     <button
-                      onClick={() => onUndo(task)}
+                      onClick={() => setConfirmDeleteLog(l.id)}
                       style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                     >
-                      {Icons.undo(13, muted)}
+                      {Icons.trash(13, 'rgb(190,80,60)')}
                     </button>
                   )}
                 </div>
@@ -148,6 +148,20 @@ export function TaskDetailScreen({ state, task, onComplete, onUndo, onBack, onKu
           </div>
         </div>
       </div>
+
+      {/* Delete log entry confirmation */}
+      {confirmDeleteLog && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200, display: 'flex', alignItems: 'flex-end' }}>
+          <div style={{ width: '100%', background: dark ? 'rgb(28,22,26)' : 'rgb(253,248,241)', borderRadius: '24px 24px 0 0', padding: '28px 20px 40px' }}>
+            <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 24, color: txt, marginBottom: 8 }}>Eintrag löschen?</div>
+            <div style={{ fontSize: 14, color: muted, marginBottom: 24 }}>Dieser Eintrag wird dauerhaft aus dem Verlauf entfernt.</div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setConfirmDeleteLog(null)} style={{ flex: 1, padding: '14px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', background: 'transparent', color: muted, fontSize: 14, fontWeight: 500 }}>Abbrechen</button>
+              <button onClick={() => { onDeleteLog?.(confirmDeleteLog); setConfirmDeleteLog(null) }} style={{ flex: 2, padding: '14px', borderRadius: 14, border: 'none', cursor: 'pointer', background: 'rgb(190,60,60)', color: '#fff', fontSize: 14, fontWeight: 600 }}>Löschen</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation */}
       {confirmDelete && (

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { WarmBackdrop } from '@/components/shared/WarmBackdrop'
 import { PullToRefresh } from '@/components/shared/PullToRefresh'
 import { TabBar } from '@/components/shared/TabBar'
@@ -57,6 +57,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
   const [showHearts, setShowHearts] = useState(false)
   const [toast, setToast] = useState<Toast | null>(null)
   const [dark] = useState(false)
+  const pendingDeletions = useRef<Set<string>>(new Set())
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -81,8 +82,9 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
   }, [householdId, currentProfile.id, tasks, supabase])
 
   const handleComplete = async (task: Task) => {
+    const optimisticId = `optimistic-${Date.now()}`
     const optimisticLog: ComputedTaskLog = {
-      id: `optimistic-${Date.now()}`,
+      id: optimisticId,
       taskId: task.id, taskName: task.name, cat: task.category,
       pts: task.pts, time: task.time_minutes, memberId: currentProfile.id, ts: Date.now(),
     }
@@ -91,7 +93,31 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
     setTimeout(() => setShowPetals(false), 2500)
     setToast({ kind: 'done', taskName: task.name, time: task.time_minutes, color: '#888' })
     setTimeout(() => setToast(null), 2600)
-    await supabase.from('task_logs').insert({ task_id: task.id, profile_id: currentProfile.id, household_id: householdId })
+    const { data } = await supabase
+      .from('task_logs')
+      .insert({ task_id: task.id, profile_id: currentProfile.id, household_id: householdId })
+      .select('id')
+      .single()
+    if (data?.id) {
+      if (pendingDeletions.current.has(optimisticId)) {
+        // User undid before the insert resolved — delete the newly created row
+        pendingDeletions.current.delete(optimisticId)
+        await supabase.from('task_logs').delete().eq('id', data.id)
+      } else {
+        // Replace the optimistic ID with the real DB ID so future deletes work
+        setLogs((prev) => prev.map((l) => l.id === optimisticId ? { ...l, id: data.id } : l))
+      }
+    }
+  }
+
+  const handleDeleteLog = async (logId: string) => {
+    setLogs((prev) => prev.filter((l) => l.id !== logId))
+    if (logId.startsWith('optimistic-')) {
+      // Insert still in flight — mark for deletion when it resolves
+      pendingDeletions.current.add(logId)
+    } else {
+      await supabase.from('task_logs').delete().eq('id', logId)
+    }
   }
 
   const handleUndo = async (task: Task) => {
@@ -100,20 +126,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
       (l) => l.taskId === task.id && l.memberId === currentProfile.id && l.ts >= todayStart.getTime()
     )
     if (!logToRemove) return
-    setLogs((prev) => prev.filter((l) => l !== logToRemove))
-    if (logToRemove.id.startsWith('optimistic-')) {
-      const { data } = await supabase
-        .from('task_logs')
-        .select('id')
-        .eq('task_id', task.id)
-        .eq('profile_id', currentProfile.id)
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .single()
-      if (data) await supabase.from('task_logs').delete().eq('id', data.id)
-    } else {
-      await supabase.from('task_logs').delete().eq('id', logToRemove.id)
-    }
+    handleDeleteLog(logToRemove.id)
   }
 
   const handleKudos = async (toMemberId: string, task: Task, reason?: string) => {
@@ -184,6 +197,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
           task={openTask}
           onComplete={handleComplete}
           onUndo={handleUndo}
+          onDeleteLog={handleDeleteLog}
           onBack={() => setOpenTask(null)}
           onKudos={handleKudos}
           onEdit={(task) => setEditingTask(task)}
