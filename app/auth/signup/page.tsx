@@ -24,8 +24,7 @@ export default function SignupPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/onboarding')
-      router.refresh()
+      router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`)
     }
   }
 

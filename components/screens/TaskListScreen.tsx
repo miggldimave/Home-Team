@@ -10,13 +10,14 @@ import type { AppState, Task } from '@/lib/types'
 interface TaskListScreenProps {
   state: AppState
   onComplete: (task: Task) => void
+  onUndo: (task: Task) => void
   onOpenTask: (task: Task) => void
   onAddTask: () => void
   onEditTask: (task: Task) => void
   onDeleteTask: (taskId: string) => void
 }
 
-export function TaskListScreen({ state, onComplete, onOpenTask, onAddTask, onEditTask, onDeleteTask }: TaskListScreenProps) {
+export function TaskListScreen({ state, onComplete, onUndo, onOpenTask, onAddTask, onEditTask, onDeleteTask }: TaskListScreenProps) {
   const { tasks, logs, profiles, categories, dark } = state
   const [filter, setFilter] = useState('Alle')
   const catNames = categories.map((c) => c.name)
@@ -114,7 +115,7 @@ export function TaskListScreen({ state, onComplete, onOpenTask, onAddTask, onEdi
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {catTasks.map((t) => (
-                      <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onOpen={onOpenTask} state={state}/>
+                      <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onUndo={onUndo} onOpen={onOpenTask} state={state}/>
                     ))}
                   </div>
                 </div>

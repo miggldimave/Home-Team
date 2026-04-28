@@ -91,8 +91,29 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
     setTimeout(() => setShowPetals(false), 2500)
     setToast({ kind: 'done', taskName: task.name, time: task.time_minutes, color: '#888' })
     setTimeout(() => setToast(null), 2600)
-    if (openTask?.id === task.id) setOpenTask(null)
     await supabase.from('task_logs').insert({ task_id: task.id, profile_id: currentProfile.id, household_id: householdId })
+  }
+
+  const handleUndo = async (task: Task) => {
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+    const logToRemove = logs.find(
+      (l) => l.taskId === task.id && l.memberId === currentProfile.id && l.ts >= todayStart.getTime()
+    )
+    if (!logToRemove) return
+    setLogs((prev) => prev.filter((l) => l !== logToRemove))
+    if (logToRemove.id.startsWith('optimistic-')) {
+      const { data } = await supabase
+        .from('task_logs')
+        .select('id')
+        .eq('task_id', task.id)
+        .eq('profile_id', currentProfile.id)
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .single()
+      if (data) await supabase.from('task_logs').delete().eq('id', data.id)
+    } else {
+      await supabase.from('task_logs').delete().eq('id', logToRemove.id)
+    }
   }
 
   const handleKudos = async (toMemberId: string, task: Task, reason?: string) => {
@@ -162,6 +183,7 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
           state={state}
           task={openTask}
           onComplete={handleComplete}
+          onUndo={handleUndo}
           onBack={() => setOpenTask(null)}
           onKudos={handleKudos}
           onEdit={(task) => setEditingTask(task)}
@@ -169,8 +191,8 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
         />
       )
     }
-    if (screen === 'home') return <HomeScreen state={state} onComplete={handleComplete} onNavigate={(s) => setScreen(s as TabKey)} onKudos={handleKudos} onOpenTask={setOpenTask} onAddTask={() => setAddingTask(true)} kudosDismissedAt={kudosDismissedAt} onDismissKudos={handleDismissKudos}/>
-    if (screen === 'list') return <TaskListScreen state={state} onComplete={handleComplete} onOpenTask={setOpenTask} onAddTask={() => setAddingTask(true)} onEditTask={(task) => setEditingTask(task)} onDeleteTask={handleDeleteTask}/>
+    if (screen === 'home') return <HomeScreen state={state} onComplete={handleComplete} onUndo={handleUndo} onNavigate={(s) => setScreen(s as TabKey)} onKudos={handleKudos} onOpenTask={setOpenTask} onAddTask={() => setAddingTask(true)} kudosDismissedAt={kudosDismissedAt} onDismissKudos={handleDismissKudos}/>
+    if (screen === 'list') return <TaskListScreen state={state} onComplete={handleComplete} onUndo={handleUndo} onOpenTask={setOpenTask} onAddTask={() => setAddingTask(true)} onEditTask={(task) => setEditingTask(task)} onDeleteTask={handleDeleteTask}/>
     if (screen === 'appreciate') return <AppreciateScreen state={state} onKudos={handleKudos} onOpenTask={setOpenTask} showHistory={showHistory} onShowHistory={() => setShowHistory(true)} onHideHistory={() => setShowHistory(false)}/>
     if (screen === 'analytics') return <AnalyticsScreen state={state}/>
     return null

@@ -20,6 +20,7 @@ import type { AppState, ComputedTaskLog, Task } from '@/lib/types'
 interface HomeScreenProps {
   state: AppState
   onComplete: (task: Task) => void
+  onUndo: (task: Task) => void
   onNavigate: (screen: string) => void
   onKudos: (toMemberId: string, task: Task, reason?: string) => void
   onOpenTask: (task: Task) => void
@@ -28,7 +29,7 @@ interface HomeScreenProps {
   onDismissKudos: () => void
 }
 
-export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask, onAddTask, kudosDismissedAt, onDismissKudos }: HomeScreenProps) {
+export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onOpenTask, onAddTask, kudosDismissedAt, onDismissKudos }: HomeScreenProps) {
   const router = useRouter()
   const { logs, tasks, profiles, currentProfile, categories, kudos, dark } = state
   const me = currentProfile
@@ -271,7 +272,7 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
           </div>
           <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {due.map((t) => (
-              <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onOpen={onOpenTask} state={state}/>
+              <TaskRow key={t.id} task={t} dark={dark} onComplete={onComplete} onUndo={onUndo} onOpen={onOpenTask} state={state}/>
             ))}
             {due.length === 0 && (
               <div style={{ padding: '32px 20px', textAlign: 'center', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 20, color: muted, fontStyle: 'italic' }}>
@@ -325,10 +326,11 @@ export function HomeScreen({ state, onComplete, onNavigate, onKudos, onOpenTask,
   )
 }
 
-export function TaskRow({ task, dark, onComplete, onOpen, state, hideFlame = false }: {
+export function TaskRow({ task, dark, onComplete, onUndo, onOpen, state, hideFlame = false }: {
   task: Task & { last?: ComputedTaskLog }
   dark: boolean
   onComplete: (task: Task) => void
+  onUndo?: (task: Task) => void
   onOpen?: (task: Task) => void
   state: AppState
   hideFlame?: boolean
@@ -340,7 +342,7 @@ export function TaskRow({ task, dark, onComplete, onOpen, state, hideFlame = fal
 
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
   const done = state.logs.some(
-    (l) => l.taskId === task.id && l.ts >= todayStart.getTime()
+    (l) => l.taskId === task.id && l.memberId === state.currentProfile.id && l.ts >= todayStart.getTime()
   )
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
@@ -349,7 +351,10 @@ export function TaskRow({ task, dark, onComplete, onOpen, state, hideFlame = fal
 
   const handle = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (done) return
+    if (done) {
+      onUndo?.(task)
+      return
+    }
     setTimeout(() => onComplete(task), 280)
   }
 
@@ -414,7 +419,7 @@ export function TaskRow({ task, dark, onComplete, onOpen, state, hideFlame = fal
           flexShrink: 0,
         }}
       >
-        {Icons.check(18, 'white', 2.6)}
+        {done ? Icons.undo(16, 'white') : Icons.check(18, 'white', 2.6)}
       </button>
     </div>
   )

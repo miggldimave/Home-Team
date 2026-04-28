@@ -20,13 +20,14 @@ interface TaskDetailScreenProps {
   state: AppState
   task: Task
   onComplete: (task: Task) => void
+  onUndo?: (task: Task) => void
   onBack: () => void
   onKudos: (toMemberId: string, task: Task, reason?: string) => void
   onEdit?: (task: Task) => void
   onDelete?: (taskId: string) => void
 }
 
-export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, onEdit, onDelete }: TaskDetailScreenProps) {
+export function TaskDetailScreen({ state, task, onComplete, onUndo, onBack, onKudos, onEdit, onDelete }: TaskDetailScreenProps) {
   const { logs, profiles, currentProfile, categories, dark } = state
   const me = currentProfile
   const cat = getCatToken(categories, task.category)
@@ -34,7 +35,8 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, onE
   const streakMember = streak.member ? profiles.find((m) => m.id === streak.member) : null
   const history = logs.filter((l) => l.taskId === task.id).slice(0, 10)
 
-  const [done, setDone] = useState(false)
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
@@ -123,6 +125,7 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, onE
             {history.map((l, i) => {
               const m = profiles.find((mm) => mm.id === l.memberId)
               if (!m) return null
+              const canUndo = onUndo && l.memberId === me.id && l.ts >= todayStart.getTime()
               return (
                 <div key={i} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, borderTop: i > 0 ? (dark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)') : 'none' }}>
                   <Avatar member={m} size={32}/>
@@ -131,6 +134,14 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, onE
                     <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)}</div>
                   </div>
                   <div style={{ fontSize: 12, color: muted }}>{formatMinutes(l.time)}</div>
+                  {canUndo && (
+                    <button
+                      onClick={() => onUndo(task)}
+                      style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                    >
+                      {Icons.undo(13, muted)}
+                    </button>
+                  )}
                 </div>
               )
             })}
@@ -155,22 +166,20 @@ export function TaskDetailScreen({ state, task, onComplete, onBack, onKudos, onE
       {/* CTA */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, padding: '24px 16px calc(20px + env(safe-area-inset-bottom))', background: 'linear-gradient(to top, rgba(253,248,241,1) 60%, rgba(253,248,241,0) 100%)' }}>
         <button
-          onClick={() => { setDone(true); setTimeout(() => onComplete(task), 400) }}
-          disabled={done}
+          onClick={() => onComplete(task)}
           style={{
-            width: '100%', border: 'none', cursor: done ? 'default' : 'pointer',
+            width: '100%', border: 'none', cursor: 'pointer',
             padding: '16px 20px', borderRadius: 20,
-            background: done ? 'rgb(138, 170, 138)' : cat.hue,
+            background: cat.hue,
             color: '#fff', fontSize: 15, fontWeight: 600,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            boxShadow: done ? 'none' : `0 6px 18px ${cat.hue.replace('rgb', 'rgba').replace(')', ', 0.32)')}`,
+            boxShadow: `0 6px 18px ${cat.hue.replace('rgb', 'rgba').replace(')', ', 0.32)')}`,
             letterSpacing: -0.1,
             transition: 'all 0.25s cubic-bezier(.2,.8,.2,1)',
-            transform: done ? 'scale(0.98)' : 'scale(1)',
           }}
         >
           {Icons.check(20, '#fff', 2.6)}
-          {done ? 'Erledigt' : `Erledigt · ${formatMinutes(task.time_minutes)}`}
+          {`Erledigt · ${formatMinutes(task.time_minutes)}`}
         </button>
       </div>
     </div>
