@@ -48,7 +48,9 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
     .map((t) => {
       const last = lastDone[t.id]
       const lastTs = last?.ts
-      const dueIn = lastTs ? (lastTs + t.cycle_days * 86400000 - now) / 86400000 : -t.cycle_days
+      const createdTs = new Date(t.created_at).getTime()
+      const refTs = lastTs ?? createdTs
+      const dueIn = (refTs + t.cycle_days * 86400000 - now) / 86400000
       return { ...t, last, dueIn, overdueDays: Math.max(0, -dueIn) }
     })
     .filter((t) => t.dueIn <= 1)
@@ -76,11 +78,14 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
   )
 
   const [dismissedFeedIds, setDismissedFeedIds] = useState<Set<string>>(new Set())
+  const [entlastungDismissed, setEntlastungDismissed] = useState<{ taskId: string; atCount: number } | null>(null)
 
   useEffect(() => {
     router.prefetch('/settings')
     const stored = JSON.parse(localStorage.getItem('dismissedFeedIds') ?? '[]') as string[]
     if (stored.length) setDismissedFeedIds(new Set(stored))
+    const ed = localStorage.getItem('entlastungDismissed')
+    if (ed) setEntlastungDismissed(JSON.parse(ed))
   }, [])
 
   const dismissFeedItem = (id: string) => {
@@ -89,6 +94,11 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
       localStorage.setItem('dismissedFeedIds', JSON.stringify([...next]))
       return next
     })
+  }
+  const dismissEntlastung = (taskId: string, atCount: number) => {
+    const val = { taskId, atCount }
+    setEntlastungDismissed(val)
+    localStorage.setItem('entlastungDismissed', JSON.stringify(val))
   }
   const visibleFeed = recentByOther.filter((l) => !dismissedFeedIds.has(l.id))
 
@@ -181,7 +191,7 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
       </div>}
 
       {/* Entlastungs-Karte */}
-      {entlastung && other && (
+      {entlastung && other && (!entlastungDismissed || entlastungDismissed.taskId !== entlastung.id || entlastung.streak.count > entlastungDismissed.atCount) && (
         <div
           style={{
             margin: '14px 16px 0', padding: '16px 18px', borderRadius: 22,
@@ -190,6 +200,12 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
           }}
           onClick={() => onOpenTask(entlastung)}
         >
+          <button
+            onClick={(e) => { e.stopPropagation(); dismissEntlastung(entlastung.id, entlastung.streak.count) }}
+            style={{ position: 'absolute', top: 10, right: 10, border: 'none', cursor: 'pointer', width: 26, height: 26, borderRadius: '50%', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            {Icons.close(12, muted)}
+          </button>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <div style={{ position: 'relative' }}>
               <Avatar member={other} size={40} />
@@ -209,7 +225,7 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
               Ich mach&apos;s · {formatMinutes(entlastung.time_minutes)}
             </button>
             <button onClick={(e) => { e.stopPropagation(); onKudos(other.id, entlastung) }} style={{ border: 'none', cursor: 'pointer', padding: '10px 14px', borderRadius: 999, background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.85)', color: txt, fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Heart size={14} filled color={me.color}/>
+              <Heart size={14} filled={myKudosTaskIds.has(entlastung.id)} color={me.color}/>
               Danke
             </button>
           </div>
