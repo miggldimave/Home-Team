@@ -1,7 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
 import { CategoryOrb } from '@/components/shared/CategoryOrb'
-import { timeByMember, formatMinutes } from '@/lib/helpers'
+import { metricByMember, formatMetric, metricOfLog } from '@/lib/helpers'
 import type { AppState } from '@/lib/types'
 
 type Period = 'week' | 'month' | 'year' | 'all'
@@ -28,11 +28,12 @@ function getSince(period: Period): number {
 export function AnalyticsScreen({ state }: { state: AppState }) {
   const [period, setPeriod] = useState<Period>('month')
   const { logs, profiles, categories, dark } = state
+  const mode = state.household.scoring_mode
   const since = getSince(period)
 
   const memberTimes = profiles.map((p) => ({
     profile: p,
-    time: timeByMember(logs, p.id, since),
+    time: metricByMember(logs, p.id, since, mode),
   }))
   const total = memberTimes.reduce((s, m) => s + m.time, 0) || 1
 
@@ -42,7 +43,7 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
     profiles.forEach((p) => { byCat[c.name][p.id] = 0 })
   })
   logs.filter((l) => l.ts >= since).forEach((l) => {
-    if (byCat[l.cat]) byCat[l.cat][l.memberId] = (byCat[l.cat][l.memberId] || 0) + l.time
+    if (byCat[l.cat]) byCat[l.cat][l.memberId] = (byCat[l.cat][l.memberId] || 0) + metricOfLog(l, mode)
   })
 
   const chartBars = useMemo(() => {
@@ -56,7 +57,7 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
         profiles.forEach((p) => {
           byMember[p.id] = logs
             .filter((l) => l.memberId === p.id && l.ts >= ds && l.ts < de)
-            .reduce((a, l) => a + l.time, 0)
+            .reduce((a, l) => a + metricOfLog(l, mode), 0)
         })
         return { label: '', byMember }
       })
@@ -77,11 +78,11 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
       profiles.forEach((p) => {
         byMember[p.id] = logs
           .filter((l) => l.memberId === p.id && l.ts >= start && l.ts < end)
-          .reduce((a, l) => a + l.time, 0)
+          .reduce((a, l) => a + metricOfLog(l, mode), 0)
       })
       return { label: MONTH_NAMES[month], byMember }
     })
-  }, [period, logs, profiles])
+  }, [period, logs, profiles, mode])
 
   const maxBar = Math.max(...chartBars.map((b) => Object.values(b.byMember).reduce((a, v) => a + v, 0)), 1)
   const isMonthly = period === 'year' || period === 'all'
@@ -141,7 +142,7 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           {memberTimes.map((mt, i) => (
             <div key={mt.profile.id} style={{ flex: 1, textAlign: i === 0 ? 'right' : 'left' }}>
-              <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 28, color: txt, letterSpacing: -0.3, lineHeight: 1 }}>{formatMinutes(mt.time)}</div>
+              <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 28, color: txt, letterSpacing: -0.3, lineHeight: 1 }}>{formatMetric(mt.time, mode)}</div>
               <div style={{ fontSize: 12, color: muted, marginTop: 4 }}>{mt.profile.display_name}</div>
             </div>
           ))}
@@ -171,7 +172,7 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
 
       {/* Category breakdown */}
       <div style={{ margin: '22px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Zeit nach Bereich</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>{mode === 'punkte' ? 'Punkte nach Bereich' : 'Zeit nach Bereich'}</div>
         {Object.entries(byCat).map(([c, v]) => {
           const t = Object.values(v).reduce((a, b) => a + b, 0)
           if (t === 0) return null
@@ -182,7 +183,7 @@ export function AnalyticsScreen({ state }: { state: AppState }) {
                   <CategoryOrb cat={c} size={18} categories={categories}/>
                   <span style={{ fontSize: 13, color: txt, fontWeight: 500 }}>{c}</span>
                 </div>
-                <span style={{ fontSize: 12, color: muted }}>{formatMinutes(t)}</span>
+                <span style={{ fontSize: 12, color: muted }}>{formatMetric(t, mode)}</span>
               </div>
               <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex', background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }}>
                 {profiles.map((p) => (

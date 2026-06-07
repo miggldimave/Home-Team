@@ -275,7 +275,7 @@ export function SettingsShell({ profile, household }: { profile: Profile; househ
             ))}
           </div>
           <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>
-            Wenn {quotaGoal}% der Aufgabenzeit erledigt sind, zeigt der Balken 100%.
+            Wenn {quotaGoal}% {scoringMode === 'punkte' ? 'der Aufgabenpunkte' : 'der Aufgabenzeit'} erledigt sind, zeigt der Balken 100%.
           </div>
         </div>
 

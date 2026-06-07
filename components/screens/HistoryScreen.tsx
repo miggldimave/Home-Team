@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
 import { TaskIconTile } from '@/components/shared/TaskIconTile'
 import { Icons } from '@/components/shared/Icons'
-import { formatMinutes } from '@/lib/helpers'
+import { formatMetric, metricOfLog } from '@/lib/helpers'
 import type { AppState, Task } from '@/lib/types'
 
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
@@ -16,6 +16,7 @@ interface HistoryScreenProps {
 
 export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps) {
   const { logs, tasks, profiles, currentProfile, categories, dark } = state
+  const mode = state.household.scoring_mode
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
 
@@ -40,8 +41,8 @@ export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps)
     else setMonth((m) => m + 1)
   }
 
-  const myTime = monthLogs.filter((l) => l.memberId === me.id).reduce((s, l) => s + l.time, 0)
-  const otherTime = other ? monthLogs.filter((l) => l.memberId === other.id).reduce((s, l) => s + l.time, 0) : 0
+  const myTime = monthLogs.filter((l) => l.memberId === me.id).reduce((s, l) => s + metricOfLog(l, mode), 0)
+  const otherTime = other ? monthLogs.filter((l) => l.memberId === other.id).reduce((s, l) => s + metricOfLog(l, mode), 0) : 0
   const totalTime = myTime + otherTime
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
@@ -89,7 +90,7 @@ export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps)
           <div style={{ fontSize: 12, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
             {MONTHS[month]} · {monthLogs.length} Aufgaben
           </div>
-          <div style={{ fontSize: 12, color: muted, fontWeight: 500 }}>{formatMinutes(totalTime)}</div>
+          <div style={{ fontSize: 12, color: muted, fontWeight: 500 }}>{formatMetric(totalTime, mode)}</div>
         </div>
         {totalTime > 0 ? (
           <>
@@ -100,17 +101,17 @@ export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps)
             <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', fontSize: 12, color: muted }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: me.color }}/>
-                <span>{me.display_name} · {formatMinutes(myTime)}</span>
+                <span>{me.display_name} · {formatMetric(myTime, mode)}</span>
               </div>
               {other && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>{other.display_name} · {formatMinutes(otherTime)}</span>
+                  <span>{other.display_name} · {formatMetric(otherTime, mode)}</span>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: other.color }}/>
                 </div>
               )}
             </div>
             <div style={{ marginTop: 14, paddingTop: 14, borderTop: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18, lineHeight: 1.3, color: txt, letterSpacing: -0.2 }}>
-              Ihr habt zusammen <em>{formatMinutes(totalTime)}</em> investiert.
+              Ihr habt zusammen <em>{formatMetric(totalTime, mode)}</em> {mode === 'punkte' ? 'gesammelt' : 'investiert'}.
             </div>
           </>
         ) : (
@@ -139,7 +140,7 @@ export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps)
                   <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.taskName}</div>
                   <div style={{ fontSize: 11, color: muted, marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Avatar member={member} size={14}/>
-                    <span>{member.display_name} · {formatMinutes(l.time)}</span>
+                    <span>{member.display_name} · {formatMetric(metricOfLog(l, mode), mode)}</span>
                   </div>
                 </div>
                 <div style={{ fontSize: 12, color: muted, flexShrink: 0 }}>{dateStr}</div>

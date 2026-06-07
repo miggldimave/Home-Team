@@ -31,6 +31,11 @@ export const Icons = {
       <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>
     </svg>
   ),
+  star: (s = 14, c = 'currentColor') => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill={c} stroke="none">
+      <path d="M12 2.5l2.7 5.85L21 9.2l-4.6 4.43L17.6 20 12 16.77 6.4 20l1.2-6.37L3 9.2l6.3-.85z"/>
+    </svg>
+  ),
   back: (s = 22, c = 'currentColor') => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="15 6 9 12 15 18"/>

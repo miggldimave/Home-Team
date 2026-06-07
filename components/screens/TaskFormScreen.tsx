@@ -159,10 +159,12 @@ export function TaskFormScreen({ categories: initialCategories, scoringMode, edi
       <div style={{ margin: '10px 16px 0', padding: '20px', borderRadius: 24, background: cardBg, border: cardBorder }}>
         <div style={{ fontSize: 12, fontWeight: 500, color: muted, marginBottom: 14 }}>Details</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <label style={{ gridColumn: '1 / -1' }}>
-            <div style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Zeit (Min.)</div>
-            <input type="number" min="1" value={timeMinutes} onChange={(e) => setTimeMinutes(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt, outline: 'none', boxSizing: 'border-box' }}/>
-          </label>
+          {scoringMode === 'zeit' && (
+            <label style={{ gridColumn: '1 / -1' }}>
+              <div style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Zeit (Min.)</div>
+              <input type="number" min="1" value={timeMinutes} onChange={(e) => setTimeMinutes(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt, outline: 'none', boxSizing: 'border-box' }}/>
+            </label>
+          )}
           <div style={{ gridColumn: '1 / -1' }}>
             <div style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Wiederholung</div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

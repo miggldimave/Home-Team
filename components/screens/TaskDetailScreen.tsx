@@ -4,7 +4,7 @@ import { Avatar } from '@/components/shared/Avatar'
 import { TaskIconTile } from '@/components/shared/TaskIconTile'
 import { Flame, Heart, Pill, Icons } from '@/components/shared/Icons'
 import { getCatToken } from '@/lib/tokens'
-import { taskStreak, timeAgo, formatMinutes, freqLabel } from '@/lib/helpers'
+import { taskStreak, timeAgo, formatMetric, metricOfLog, metricOfTask, freqLabel } from '@/lib/helpers'
 import type { AppState, Task } from '@/lib/types'
 
 const DESCRIPTIONS: Record<string, string> = {
@@ -30,6 +30,7 @@ interface TaskDetailScreenProps {
 
 export function TaskDetailScreen({ state, task, onComplete, onUndo, onDeleteLog, onBack, onKudos, onEdit, onDelete }: TaskDetailScreenProps) {
   const { logs, profiles, currentProfile, categories, dark } = state
+  const mode = state.household.scoring_mode
   const me = currentProfile
   const cat = getCatToken(categories, task.category)
   const streak = taskStreak(logs, task.id)
@@ -79,7 +80,7 @@ export function TaskDetailScreen({ state, task, onComplete, onUndo, onDeleteLog,
         <div style={{ marginTop: 14, fontSize: 14, color: muted, lineHeight: 1.5 }}>{desc}</div>
         <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
           <Pill bg={dark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.7)'} fg={txt} style={{ padding: '6px 12px' }}>
-            {Icons.clock(12, txt)} <span>{formatMinutes(task.time_minutes)}</span>
+            {mode === 'punkte' ? Icons.star(12, txt) : Icons.clock(12, txt)} <span>{formatMetric(metricOfTask(task, mode), mode)}</span>
           </Pill>
           <Pill bg={dark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.7)'} fg={txt} style={{ padding: '6px 12px' }}>
             {Icons.repeat(12, txt)} <span>{freqLabel(task.cycle_days)}</span>
@@ -133,7 +134,7 @@ export function TaskDetailScreen({ state, task, onComplete, onUndo, onDeleteLog,
                     <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{m.display_name}</div>
                     <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)}</div>
                   </div>
-                  <div style={{ fontSize: 12, color: muted }}>{formatMinutes(l.time)}</div>
+                  <div style={{ fontSize: 12, color: muted }}>{formatMetric(metricOfLog(l, mode), mode)}</div>
                   {canDelete && (
                     <button
                       onClick={() => setConfirmDeleteLog(l.id)}
@@ -193,7 +194,7 @@ export function TaskDetailScreen({ state, task, onComplete, onUndo, onDeleteLog,
           }}
         >
           {Icons.check(20, '#fff', 2.6)}
-          {`Erledigt · ${formatMinutes(task.time_minutes)}`}
+          {`Erledigt · ${formatMetric(metricOfTask(task, mode), mode)}`}
         </button>
       </div>
     </div>

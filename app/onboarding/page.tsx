@@ -1,6 +1,7 @@
 'use client'
 import { useState, useTransition } from 'react'
 import { MEMBER_COLOR_OPTIONS, TASK_SUGGESTIONS, SUGGESTION_CATEGORY_COLORS } from '@/lib/tokens'
+import { formatPoints } from '@/lib/helpers'
 import { createHouseholdWithTasks, joinHousehold } from './actions'
 
 type Mode = 'choose' | 'create' | 'join' | 'tasks'
@@ -199,7 +200,7 @@ export default function OnboardingPage() {
                       <div style={{ fontSize: 15, fontWeight: 600, color: txt, letterSpacing: -0.1 }}>{task.name}</div>
                       <div style={{ marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }}/>
-                        <span style={{ fontSize: 12, color: muted }}>{task.category} · {task.time_minutes} min</span>
+                        <span style={{ fontSize: 12, color: muted }}>{task.category} · {scoringMode === 'punkte' ? formatPoints(task.pts) : `${task.time_minutes} min`}</span>
                       </div>
                     </div>
                     <div style={{

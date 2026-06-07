@@ -7,8 +7,9 @@ import { Flame, Heart, Icons } from '@/components/shared/Icons'
 import { getCatToken } from '@/lib/tokens'
 import {
   periodQuota,
-  timeByMember,
-  formatMinutes,
+  metricByMember,
+  formatMetric,
+  metricOfTask,
   timeAgo,
   lastDoneByTask,
   taskStreak,
@@ -35,11 +36,13 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
 
+  const mode = state.household.scoring_mode
+  const investVerb = mode === 'punkte' ? 'gesammelt' : 'investiert'
   const qPeriod = state.household.quota_period ?? 'monthly'
   const qGoal = state.household.quota_goal ?? 100
-  const quota = periodQuota(logs, tasks, qPeriod, qGoal)
-  const myTime = timeByMember(logs, me.id, quota.since)
-  const otherTime = other ? timeByMember(logs, other.id, quota.since) : 0
+  const quota = periodQuota(logs, tasks, qPeriod, qGoal, mode)
+  const myTime = metricByMember(logs, me.id, quota.since, mode)
+  const otherTime = other ? metricByMember(logs, other.id, quota.since, mode) : 0
   const totalTime = myTime + otherTime || 1
 
   const lastDone = lastDoneByTask(logs)
@@ -172,21 +175,21 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
         <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', fontSize: 12, color: muted }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: me.color }}/>
-            <span>{me.display_name} · {formatMinutes(myTime)}</span>
+            <span>{me.display_name} · {formatMetric(myTime, mode)}</span>
           </div>
           {other && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>{other.display_name} · {formatMinutes(otherTime)}</span>
+              <span>{other.display_name} · {formatMetric(otherTime, mode)}</span>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: other.color }}/>
             </div>
           )}
         </div>
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)', fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 18, lineHeight: 1.3, color: txt, letterSpacing: -0.2 }}>
           {qPeriod === 'weekly'
-            ? <>Diese Woche schon <em>{formatMinutes(quota.done)}</em> investiert.</>
+            ? <>Diese Woche schon <em>{formatMetric(quota.done, mode)}</em> {investVerb}.</>
             : qPeriod === 'biweekly'
-            ? <>In 2 Wochen zusammen <em>{formatMinutes(quota.done)}</em> investiert.</>
-            : <>Diesen Monat schon <em>{formatMinutes(quota.done)}</em> investiert.</>}
+            ? <>In 2 Wochen zusammen <em>{formatMetric(quota.done, mode)}</em> {investVerb}.</>
+            : <>Diesen Monat schon <em>{formatMetric(quota.done, mode)}</em> {investVerb}.</>}
         </div>
       </div>}
 
@@ -222,7 +225,7 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             <button onClick={(e) => { e.stopPropagation(); onComplete(entlastung) }} style={{ flex: 1, border: 'none', cursor: 'pointer', padding: '10px 14px', borderRadius: 999, background: txt, color: dark ? '#2A221E' : '#FDF8F1', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-              Ich mach&apos;s · {formatMinutes(entlastung.time_minutes)}
+              Ich mach&apos;s · {formatMetric(metricOfTask(entlastung, mode), mode)}
             </button>
             <button onClick={(e) => { e.stopPropagation(); onKudos(other.id, entlastung) }} style={{ border: 'none', cursor: 'pointer', padding: '10px 14px', borderRadius: 999, background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.85)', color: txt, fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
               <Heart size={14} filled={myKudosTaskIds.has(entlastung.id)} color={me.color}/>
@@ -318,7 +321,7 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
                   <TaskIconTile task={task} size={36}/>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{l.taskName}</div>
-                    <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)} · {formatMinutes(l.time)}</div>
+                    <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)} · {formatMetric(mode === 'punkte' ? l.pts : l.time, mode)}</div>
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); onKudos(other.id, task) }}
@@ -354,6 +357,7 @@ export function TaskRow({ task, dark, onComplete, onUndo, onOpen, state, hideFla
   const streak = taskStreak(state.logs, task.id)
   const lastDoneBy = streak.member ? state.profiles.find((m) => m.id === streak.member) : null
   const cat = getCatToken(state.categories, task.category)
+  const mode = state.household.scoring_mode
   const [pressed, setPressed] = useState(false)
 
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
@@ -399,7 +403,7 @@ export function TaskRow({ task, dark, onComplete, onUndo, onOpen, state, hideFla
         </div>
         <div style={{ marginTop: 3, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: muted }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-            {Icons.clock(11, muted)} {formatMinutes(task.time_minutes)}
+            {mode === 'punkte' ? Icons.star(11, muted) : Icons.clock(11, muted)} {formatMetric(metricOfTask(task, mode), mode)}
           </span>
           <span>·</span>
           <span>zuletzt {lastTxt}</span>

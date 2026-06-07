@@ -3,7 +3,7 @@ import { Avatar } from '@/components/shared/Avatar'
 import { TaskIconTile } from '@/components/shared/TaskIconTile'
 import { Heart } from '@/components/shared/Icons'
 import { getCatToken } from '@/lib/tokens'
-import { categoryStreak, taskStreak, timeAgo, formatMinutes } from '@/lib/helpers'
+import { categoryStreak, taskStreak, timeAgo, formatMetric, metricOfLog } from '@/lib/helpers'
 import { HistoryScreen } from './HistoryScreen'
 import { InvitePrompt } from '@/components/shared/InvitePrompt'
 import type { AppState, Task } from '@/lib/types'
@@ -19,6 +19,7 @@ interface AppreciateScreenProps {
 
 export function AppreciateScreen({ state, onKudos, onOpenTask, showHistory, onShowHistory, onHideHistory }: AppreciateScreenProps) {
   const { logs, tasks, profiles, currentProfile, categories, kudos, dark } = state
+  const mode = state.household.scoring_mode
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
 
@@ -179,7 +180,7 @@ export function AppreciateScreen({ state, onKudos, onOpenTask, showHistory, onSh
                     <div style={{ fontSize: 14, fontWeight: 500, color: txt, letterSpacing: -0.1 }}>{l.taskName}</div>
                     <div style={{ fontSize: 11, color: muted, marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
                       <Avatar member={member} size={16}/>
-                      <span>{member.display_name} · {timeAgo(l.ts)} · {formatMinutes(l.time)}</span>
+                      <span>{member.display_name} · {timeAgo(l.ts)} · {formatMetric(metricOfLog(l, mode), mode)}</span>
                     </div>
                   </div>
                   {isOther && (
