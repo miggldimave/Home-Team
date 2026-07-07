@@ -11,6 +11,15 @@ Zwei Entwickler. Bei DB-Änderungen: anderen Entwickler darauf hinweisen, `npx s
 - Tailwind CSS, shadcn/ui, Lucide React
 - Supabase (Backend + Auth)
 
+## Mobile-App (`/mobile`)
+- Expo (SDK 57) + TypeScript + expo-router, App-Name "Kudo", Deep-Link-Schema `kudo://`.
+- Gleiche Supabase-Datenbank; Zugriff direkt per anon key + RLS (keine Server Actions). Benötigte Policies/RPCs: Migration `20260706214754_mobile_rls_policies.sql`.
+- Web-Code ist Design-Referenz: Screens in `mobile/src/components/screens/` sind 1:1-Ports von `components/screens/` — Änderungen an Web-Screens auch dort nachziehen.
+- `mobile/src/lib/{types,tokens,helpers}.ts` sind Kopien von `/lib` — synchron halten.
+- Umgebungsvariablen: `mobile/.env` (nicht committen) mit `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+- Prüfen nach Änderungen: `cd mobile && npx tsc --noEmit` und `npx expo export --platform ios --platform android`.
+- Lokal starten: `cd mobile && npx expo start` (Expo Go oder Dev Client).
+
 ## Oberfläche
 Prototyp wird nativ aus dem Claude Designer übergeben. Jeden Screen 1:1 nach Ästhetik, Abstands- und Farbpaletten-Vorgaben des Prototyps umsetzen. Generierte Tailwind-Konfiguration bzw. CSS-Variablen als Basis nutzen.
 
