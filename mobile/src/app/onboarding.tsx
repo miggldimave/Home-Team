@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 import { serifFont } from '@/lib/fonts'
 import { MEMBER_COLOR_OPTIONS, TASK_SUGGESTIONS, SUGGESTION_CATEGORY_COLORS } from '@/lib/tokens'
+import { formatPoints } from '@/lib/helpers'
 
 type Mode = 'choose' | 'create' | 'join' | 'tasks'
 
@@ -262,7 +263,7 @@ export default function OnboardingPage() {
                         <Text style={{ fontSize: 15, fontWeight: '600', color: txt, letterSpacing: -0.1 }}>{task.name}</Text>
                         <View style={{ marginTop: 3, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
-                          <Text style={{ fontSize: 12, color: muted }}>{task.category} · {task.time_minutes} min</Text>
+                          <Text style={{ fontSize: 12, color: muted }}>{task.category} · {scoringMode === 'punkte' ? formatPoints(task.pts) : `${task.time_minutes} min`}</Text>
                         </View>
                       </View>
                       <View

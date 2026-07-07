@@ -1,9 +1,8 @@
 // 1:1 port of app/settings/SettingsShell.tsx (web), with data loaded/mutated
 // directly via the authenticated supabase client instead of server actions:
 //  - profiles update: own row (RLS allows self-update)
-//  - households update: name / quota_period / quota_goal only
-//    (scoring_mode / invite_code are blocked by RLS — no UI for scoring_mode
-//    is rendered as an editable control that would silently fail; see below)
+//  - households update: name / scoring_mode / quota_period / quota_goal
+//    (invite_code is not touched — settings never changes it)
 //  - avatar upload: supabase.storage 'avatars' bucket via expo-image-picker
 //  - logout: supabase.auth.signOut() then router.replace('/auth/login')
 import { useState } from 'react'
@@ -42,7 +41,7 @@ export function SettingsScreen({ profile, household, onBack, onSignedOut }: Sett
     MEMBER_COLOR_OPTIONS.find((o) => o.color === profile.color) ?? MEMBER_COLOR_OPTIONS[0]
   )
   const [householdName, setHouseholdName] = useState(household.name)
-  const [scoringMode] = useState<ScoringMode>(household.scoring_mode)
+  const [scoringMode, setScoringMode] = useState<ScoringMode>(household.scoring_mode)
   const [quotaPeriod, setQuotaPeriod] = useState<QuotaPeriod>(household.quota_period ?? 'monthly')
   const [quotaGoal, setQuotaGoal] = useState<number>(household.quota_goal ?? 100)
   const [copied, setCopied] = useState(false)
@@ -132,12 +131,11 @@ export function SettingsScreen({ profile, household, onBack, onSignedOut }: Sett
 
   const handleHouseholdSave = async () => {
     setIsPending(true)
-    // Note: scoring_mode / invite_code are blocked by RLS on mobile — only
-    // name / quota_period / quota_goal are sent.
     const { error } = await supabase
       .from('households')
       .update({
         name: householdName || household.name,
+        scoring_mode: scoringMode,
         quota_period: quotaPeriod,
         quota_goal: quotaGoal,
       })
@@ -282,22 +280,23 @@ export function SettingsScreen({ profile, household, onBack, onSignedOut }: Sett
             {(['zeit', 'punkte'] as const).map((mode) => {
               const active = scoringMode === mode
               return (
-                <View
+                <Pressable
                   key={mode}
+                  onPress={() => setScoringMode(mode)}
                   style={[
                     styles.modeBtn,
-                    { backgroundColor: active ? txt : 'rgba(0,0,0,0.04)', opacity: 0.6 },
+                    { backgroundColor: active ? txt : 'rgba(0,0,0,0.04)' },
                   ]}
                 >
                   <Text style={{ fontSize: 14, fontWeight: '600', color: active ? '#FDF8F1' : muted }}>
                     {mode === 'zeit' ? '⏱ Zeit' : '⭐ Punkte'}
                   </Text>
-                </View>
+                </Pressable>
               )
             })}
           </View>
           <Text style={{ fontSize: 11, color: muted, marginTop: 6 }}>
-            Betrifft den gesamten Haushalt — nur im Web änderbar.
+            Achtung: betrifft den gesamten Haushalt.
           </Text>
         </View>
 
@@ -347,7 +346,7 @@ export function SettingsScreen({ profile, household, onBack, onSignedOut }: Sett
             ))}
           </View>
           <Text style={{ fontSize: 11, color: muted, marginTop: 2 }}>
-            Wenn {quotaGoal}% der Aufgabenzeit erledigt sind, zeigt der Balken 100%.
+            Wenn {quotaGoal}% {scoringMode === 'punkte' ? 'der Aufgabenpunkte' : 'der Aufgabenzeit'} erledigt sind, zeigt der Balken 100%.
           </Text>
         </View>
 

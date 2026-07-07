@@ -1,4 +1,4 @@
-import type { ComputedTaskLog, Task, QuotaPeriod } from './types'
+import type { ComputedTaskLog, Task, QuotaPeriod, ScoringMode } from './types'
 
 export function lastDoneByTask(logs: ComputedTaskLog[]): Record<string, ComputedTaskLog> {
   const m: Record<string, ComputedTaskLog> = {}
@@ -69,22 +69,32 @@ export function periodQuota(
   tasks: Task[],
   period: QuotaPeriod = 'monthly',
   goal = 80,
+  mode: ScoringMode = 'zeit',
 ): { done: number; expected: number; pct: number; since: number } {
   const days = periodLengthDays(period)
-  const expected = tasks.reduce((s, t) => s + t.time_minutes * (days / t.cycle_days), 0)
+  const expected = tasks.reduce((s, t) => s + metricOfTask(t, mode) * (days / t.cycle_days), 0)
   const since = periodStartTs(period)
-  const done = logs.filter((l) => l.ts >= since).reduce((s, l) => s + l.time, 0)
+  const done = logs.filter((l) => l.ts >= since).reduce((s, l) => s + metricOfLog(l, mode), 0)
   const target = expected * (goal / 100)
   return { done, expected: Math.round(expected), pct: Math.min(1, target > 0 ? done / target : 0), since }
 }
 
-export function monthlyQuota(logs: ComputedTaskLog[], tasks: Task[]): { done: number; expected: number; pct: number } {
-  const { done, expected, pct } = periodQuota(logs, tasks, 'monthly', 100)
+export function monthlyQuota(logs: ComputedTaskLog[], tasks: Task[], mode: ScoringMode = 'zeit'): { done: number; expected: number; pct: number } {
+  const { done, expected, pct } = periodQuota(logs, tasks, 'monthly', 100, mode)
   return { done, expected, pct }
 }
 
-export function timeByMember(logs: ComputedTaskLog[], uid: string, since: number): number {
-  return logs.filter((l) => l.memberId === uid && l.ts >= since).reduce((s, l) => s + l.time, 0)
+export function metricByMember(logs: ComputedTaskLog[], uid: string, since: number, mode: ScoringMode): number {
+  return logs.filter((l) => l.memberId === uid && l.ts >= since).reduce((s, l) => s + metricOfLog(l, mode), 0)
+}
+
+// Liefert den für den Haushaltsmodus relevanten Messwert.
+export function metricOfLog(log: ComputedTaskLog, mode: ScoringMode): number {
+  return mode === 'punkte' ? log.pts : log.time
+}
+
+export function metricOfTask(task: Task, mode: ScoringMode): number {
+  return mode === 'punkte' ? task.pts : task.time_minutes
 }
 
 export function formatMinutes(min: number): string {
@@ -93,6 +103,15 @@ export function formatMinutes(min: number): string {
   const m = min % 60
   if (m === 0) return `${h}h`
   return `${h}h ${m}min`
+}
+
+export function formatPoints(pts: number): string {
+  return `${pts} ${pts === 1 ? 'Punkt' : 'Punkte'}`
+}
+
+// Formatiert einen Messwert je nach Haushaltsmodus (Minuten oder Punkte).
+export function formatMetric(value: number, mode: ScoringMode): string {
+  return mode === 'punkte' ? formatPoints(value) : formatMinutes(value)
 }
 
 export function timeAgo(ts: number): string {

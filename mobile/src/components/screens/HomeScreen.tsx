@@ -8,8 +8,9 @@ import { Flame, Heart, Icons } from '@/components/shared/Icons'
 import { getCatToken } from '@/lib/tokens'
 import {
   periodQuota,
-  timeByMember,
-  formatMinutes,
+  metricByMember,
+  formatMetric,
+  metricOfTask,
   timeAgo,
   lastDoneByTask,
   taskStreak,
@@ -37,11 +38,13 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
 
+  const mode = state.household.scoring_mode
+  const investVerb = mode === 'punkte' ? 'gesammelt' : 'investiert'
   const qPeriod = state.household.quota_period ?? 'monthly'
   const qGoal = state.household.quota_goal ?? 100
-  const quota = periodQuota(logs, tasks, qPeriod, qGoal)
-  const myTime = timeByMember(logs, me.id, quota.since)
-  const otherTime = other ? timeByMember(logs, other.id, quota.since) : 0
+  const quota = periodQuota(logs, tasks, qPeriod, qGoal, mode)
+  const myTime = metricByMember(logs, me.id, quota.since, mode)
+  const otherTime = other ? metricByMember(logs, other.id, quota.since, mode) : 0
   const totalTime = myTime + otherTime || 1
 
   const lastDone = lastDoneByTask(logs)
@@ -195,11 +198,11 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
           <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: me.color }} />
-              <Text style={{ fontSize: 12, color: muted }}>{me.display_name} · {formatMinutes(myTime)}</Text>
+              <Text style={{ fontSize: 12, color: muted }}>{me.display_name} · {formatMetric(myTime, mode)}</Text>
             </View>
             {other && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontSize: 12, color: muted }}>{other.display_name} · {formatMinutes(otherTime)}</Text>
+                <Text style={{ fontSize: 12, color: muted }}>{other.display_name} · {formatMetric(otherTime, mode)}</Text>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: other.color }} />
               </View>
             )}
@@ -207,10 +210,10 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
           <View style={{ marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }}>
             <Text style={{ fontFamily: serifFont, fontSize: 18, lineHeight: 23, color: txt, letterSpacing: -0.2 }}>
               {qPeriod === 'weekly'
-                ? <>Diese Woche schon <Text style={{ fontFamily: serifItalicFont }}>{formatMinutes(quota.done)}</Text> investiert.</>
+                ? <>Diese Woche schon <Text style={{ fontFamily: serifItalicFont }}>{formatMetric(quota.done, mode)}</Text> {investVerb}.</>
                 : qPeriod === 'biweekly'
-                ? <>In 2 Wochen zusammen <Text style={{ fontFamily: serifItalicFont }}>{formatMinutes(quota.done)}</Text> investiert.</>
-                : <>Diesen Monat schon <Text style={{ fontFamily: serifItalicFont }}>{formatMinutes(quota.done)}</Text> investiert.</>}
+                ? <>In 2 Wochen zusammen <Text style={{ fontFamily: serifItalicFont }}>{formatMetric(quota.done, mode)}</Text> {investVerb}.</>
+                : <>Diesen Monat schon <Text style={{ fontFamily: serifItalicFont }}>{formatMetric(quota.done, mode)}</Text> {investVerb}.</>}
             </Text>
           </View>
         </View>
@@ -252,7 +255,7 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
               style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 999, backgroundColor: txt, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             >
               <Text style={{ color: dark ? '#2A221E' : '#FDF8F1', fontSize: 13, fontWeight: '600' }}>
-                Ich mach&apos;s · {formatMinutes(entlastung.time_minutes)}
+                Ich mach&apos;s · {formatMetric(metricOfTask(entlastung, mode), mode)}
               </Text>
             </Pressable>
             <Pressable
@@ -360,7 +363,7 @@ export function HomeScreen({ state, onComplete, onUndo, onNavigate, onKudos, onO
                   <TaskIconTile task={task} size={36} categories={categories} />
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={{ fontSize: 14, fontWeight: '500', color: txt, letterSpacing: -0.1 }}>{l.taskName}</Text>
-                    <Text style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)} · {formatMinutes(l.time)}</Text>
+                    <Text style={{ fontSize: 11, color: muted, marginTop: 2 }}>{timeAgo(l.ts)} · {formatMetric(mode === 'punkte' ? l.pts : l.time, mode)}</Text>
                   </View>
                   <Pressable
                     onPress={(e) => { e.stopPropagation(); onKudos(other.id, task) }}
@@ -396,6 +399,7 @@ export function TaskRow({ task, dark, onComplete, onUndo, onOpen, state, hideFla
   const streak = taskStreak(state.logs, task.id)
   const lastDoneBy = streak.member ? state.profiles.find((m) => m.id === streak.member) : null
   const cat = getCatToken(state.categories, task.category)
+  const mode = state.household.scoring_mode
   const [pressed, setPressed] = useState(false)
 
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
@@ -440,8 +444,8 @@ export function TaskRow({ task, dark, onComplete, onUndo, onOpen, state, hideFla
         </Text>
         <View style={{ marginTop: 3, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-            {Icons.clock(11, muted)}
-            <Text style={{ fontSize: 11.5, color: muted }}>{formatMinutes(task.time_minutes)}</Text>
+            {mode === 'punkte' ? Icons.star(11, muted) : Icons.clock(11, muted)}
+            <Text style={{ fontSize: 11.5, color: muted }}>{formatMetric(metricOfTask(task, mode), mode)}</Text>
           </View>
           <Text style={{ fontSize: 11.5, color: muted }}>·</Text>
           <Text style={{ fontSize: 11.5, color: muted }}>zuletzt {lastTxt}</Text>

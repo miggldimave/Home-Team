@@ -230,15 +230,17 @@ export function TaskFormScreen({ categories: initialCategories, scoringMode, edi
         <View style={{ marginTop: 10, marginHorizontal: 16, padding: 20, borderRadius: 24, backgroundColor: cardBg, borderWidth: 1, borderColor: cardBorderColor }}>
           <Text style={{ fontSize: 12, fontWeight: '500', color: muted, marginBottom: 14 }}>Details</Text>
           <View style={{ gap: 12 }}>
-            <View>
-              <Text style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Zeit (Min.)</Text>
-              <TextInput
-                keyboardType="numeric"
-                value={timeMinutes}
-                onChangeText={setTimeMinutes}
-                style={{ width: '100%', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)', backgroundColor: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt }}
-              />
-            </View>
+            {scoringMode === 'zeit' && (
+              <View>
+                <Text style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Zeit (Min.)</Text>
+                <TextInput
+                  keyboardType="numeric"
+                  value={timeMinutes}
+                  onChangeText={setTimeMinutes}
+                  style={{ width: '100%', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)', backgroundColor: 'rgba(0,0,0,0.02)', fontSize: 16, color: txt }}
+                />
+              </View>
+            )}
             <View>
               <Text style={{ fontSize: 11, color: muted, marginBottom: 6 }}>Wiederholung</Text>
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>

@@ -24,7 +24,7 @@ Zwei Entwickler. Bei DB-Änderungen: anderen Entwickler darauf hinweisen, `npx s
 Prototyp wird nativ aus dem Claude Designer übergeben. Jeden Screen 1:1 nach Ästhetik, Abstands- und Farbpaletten-Vorgaben des Prototyps umsetzen. Generierte Tailwind-Konfiguration bzw. CSS-Variablen als Basis nutzen.
 
 ## Fachliche Regeln
-- Haushalt wählt bei Erstellung: Modus `Punkte` (1–5) ODER `Zeit` (Minuten) — global, unveränderlich.
+- Haushalt wählt bei Erstellung: Modus `Punkte` (1–5) ODER `Zeit` (Minuten) — global, kann aber später in den Einstellungen geändert werden (Hinweis: Auswertungen interpretieren historische Logs dann im neuen Modus).
 - Unsung-Hero-Dashboard: Auswertung nach aktuellem Monat / Quartal.
 - Serien: Aufgaben, die mehrfach hintereinander von derselben Person erledigt wurden, mit Serien-Hinweis markieren.
 

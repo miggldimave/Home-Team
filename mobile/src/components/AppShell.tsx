@@ -3,7 +3,7 @@
 // (RefreshControl) + the useAppRefresh() context below — there is no
 // PullToRefresh wrapper component on mobile (the web one reloads the page).
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, AppState as RNAppState } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { WarmBackdrop } from '@/components/shared/WarmBackdrop'
 import { TabBar } from '@/components/shared/TabBar'
@@ -73,25 +73,54 @@ export function AppShell({ initialLogs, tasks: initialTasks, profiles, household
   const [dark] = useState(false)
   const pendingDeletions = useRef<Set<string>>(new Set())
 
+  // Aktuelle Aufgaben-Map ohne Neu-Subscription bei jeder Änderung bereithalten
+  const taskMapRef = useRef<Record<string, Task>>({})
   useEffect(() => {
-    const taskMap = Object.fromEntries(tasks.map((t) => [t.id, t]))
-    const channel = supabase
-      .channel('realtime_all')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'task_logs', filter: `household_id=eq.${householdId}` }, (payload) => {
-        const log = payload.new as { id: string; task_id: string; profile_id: string; household_id: string; completed_at: string }
-        if (log.profile_id === currentProfile.id) return
-        const task = taskMap[log.task_id]
-        if (!task) return
-        setLogs((prev) => [toComputedLog(log, task), ...prev])
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'kudos', filter: `household_id=eq.${householdId}` }, (payload) => {
-        const k = payload.new as Kudos
-        if (k.from_profile_id === currentProfile.id) return // already optimistic
-        setKudos((prev) => [k, ...prev])
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [householdId, currentProfile.id, tasks])
+    taskMapRef.current = Object.fromEntries(tasks.map((t) => [t.id, t]))
+  }, [tasks])
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    const connect = () => {
+      if (channel) return
+      channel = supabase
+        .channel('realtime_all')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'task_logs', filter: `household_id=eq.${householdId}` }, (payload) => {
+          const log = payload.new as { id: string; task_id: string; profile_id: string; household_id: string; completed_at: string }
+          if (log.profile_id === currentProfile.id) return
+          const task = taskMapRef.current[log.task_id]
+          if (!task) return
+          setLogs((prev) => [toComputedLog(log, task), ...prev])
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'kudos', filter: `household_id=eq.${householdId}` }, (payload) => {
+          const k = payload.new as Kudos
+          if (k.from_profile_id === currentProfile.id) return // already optimistic
+          setKudos((prev) => [k, ...prev])
+        })
+        .subscribe()
+    }
+
+    const disconnect = () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+        channel = null
+      }
+    }
+
+    // WebSocket im Hintergrund trennen — spart Akku (Heartbeats/Reconnects) auf iOS
+    const subscription = RNAppState.addEventListener('change', (nextState) => {
+      if (nextState === 'background' || nextState === 'inactive') disconnect()
+      else if (nextState === 'active') connect()
+    })
+
+    if (RNAppState.currentState === 'active') connect()
+
+    return () => {
+      subscription.remove()
+      disconnect()
+    }
+  }, [householdId, currentProfile.id])
 
   const handleComplete = async (task: Task) => {
     const optimisticId = `optimistic-${Date.now()}`

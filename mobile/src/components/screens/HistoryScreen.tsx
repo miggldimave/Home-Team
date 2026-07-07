@@ -5,7 +5,7 @@ import { Avatar } from '@/components/shared/Avatar'
 import { TaskIconTile } from '@/components/shared/TaskIconTile'
 import { Icons } from '@/components/shared/Icons'
 import { serifFont } from '@/lib/fonts'
-import { formatMinutes } from '@/lib/helpers'
+import { formatMetric, metricOfLog } from '@/lib/helpers'
 import type { AppState, Task } from '@/lib/types'
 
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
@@ -18,6 +18,7 @@ interface HistoryScreenProps {
 
 export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps) {
   const { logs, tasks, profiles, currentProfile, categories, dark } = state
+  const mode = state.household.scoring_mode
   const me = currentProfile
   const other = profiles.find((p) => p.id !== me.id)
 
@@ -42,8 +43,8 @@ export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps)
     else setMonth((m) => m + 1)
   }
 
-  const myTime = monthLogs.filter((l) => l.memberId === me.id).reduce((s, l) => s + l.time, 0)
-  const otherTime = other ? monthLogs.filter((l) => l.memberId === other.id).reduce((s, l) => s + l.time, 0) : 0
+  const myTime = monthLogs.filter((l) => l.memberId === me.id).reduce((s, l) => s + metricOfLog(l, mode), 0)
+  const otherTime = other ? monthLogs.filter((l) => l.memberId === other.id).reduce((s, l) => s + metricOfLog(l, mode), 0) : 0
   const totalTime = myTime + otherTime
 
   const txt = dark ? '#F2ECE4' : '#2A221E'
@@ -85,7 +86,7 @@ export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps)
           <Text style={{ fontSize: 12, fontWeight: '600', color: muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
             {MONTHS[month]} · {monthLogs.length} Aufgaben
           </Text>
-          <Text style={{ fontSize: 12, color: muted, fontWeight: '500' }}>{formatMinutes(totalTime)}</Text>
+          <Text style={{ fontSize: 12, color: muted, fontWeight: '500' }}>{formatMetric(totalTime, mode)}</Text>
         </View>
         {totalTime > 0 ? (
           <>
@@ -96,18 +97,18 @@ export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps)
             <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: me.color }} />
-                <Text style={{ fontSize: 12, color: muted }}>{me.display_name} · {formatMinutes(myTime)}</Text>
+                <Text style={{ fontSize: 12, color: muted }}>{me.display_name} · {formatMetric(myTime, mode)}</Text>
               </View>
               {other && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={{ fontSize: 12, color: muted }}>{other.display_name} · {formatMinutes(otherTime)}</Text>
+                  <Text style={{ fontSize: 12, color: muted }}>{other.display_name} · {formatMetric(otherTime, mode)}</Text>
                   <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: other.color }} />
                 </View>
               )}
             </View>
             <View style={{ marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }}>
               <Text style={{ fontFamily: serifFont, fontSize: 18, lineHeight: 23.4, color: txt, letterSpacing: -0.2 }}>
-                Ihr habt zusammen <Text style={{ fontStyle: 'italic' }}>{formatMinutes(totalTime)}</Text> investiert.
+                Ihr habt zusammen <Text style={{ fontStyle: 'italic' }}>{formatMetric(totalTime, mode)}</Text> {mode === 'punkte' ? 'gesammelt' : 'investiert'}.
               </Text>
             </View>
           </>
@@ -142,7 +143,7 @@ export function HistoryScreen({ state, onBack, onOpenTask }: HistoryScreenProps)
                   </Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                     <Avatar member={member} size={14} />
-                    <Text style={{ fontSize: 11, color: muted }}>{member.display_name} · {formatMinutes(l.time)}</Text>
+                    <Text style={{ fontSize: 11, color: muted }}>{member.display_name} · {formatMetric(metricOfLog(l, mode), mode)}</Text>
                   </View>
                 </View>
                 <Text style={{ fontSize: 12, color: muted, flexShrink: 0 }}>{dateStr}</Text>
